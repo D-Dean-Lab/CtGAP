@@ -1,7 +1,7 @@
 rule scrub:
 	input:
-		r1 = rules.fastp.output.r1,
-		r2 = rules.fastp.output.r2,
+		r1 = INDIR / "{sample}_R1.fastq.gz",
+		r2 = INDIR / "{sample}_R2.fastq.gz",
 	output:
 		r1 = OUTDIR / "{sample}" / "scrub" / "{sample}_trim_scrub_R1.fastq.gz",
 		r2 = OUTDIR / "{sample}" / "scrub" / "{sample}_trim_scrub_R2.fastq.gz",
