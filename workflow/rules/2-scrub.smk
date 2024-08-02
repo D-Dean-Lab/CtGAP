@@ -20,7 +20,7 @@ rule scrub:
 	log: OUTDIR / "{sample}" / "log" / "scrub.{sample}.log"
 	benchmark: OUTDIR / "{sample}" / "benchmark" / "scrub.{sample}.txt"
 	shell:"""
-	scrubby scrub-reads \
+	scrubby --force scrub-reads \
 	-i {input.r1} {input.r2} \
 	-o {output.r1tmp} {output.r2tmp} \
 	--kraken-db {params.db} \
@@ -33,7 +33,7 @@ rule scrub:
 
 	echo -e "\nScrubby Kraken Extract \n" >> {log}
 
-	scrubby scrub-kraken \
+	scrubby --force scrub-kraken \
 	-i {output.r1tmp} {output.r2tmp} \
 	-o {output.r1} {output.r2} \
 	--extract \
