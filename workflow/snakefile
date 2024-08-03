@@ -45,22 +45,51 @@ if not SAMPLES:
 	pprint("[yellow] No samples were detected. Check sample sheet (samples.csv) and update sample locations as per the example.[/yellow]")
 	sys.exit()
 
+##Input files for rule all
+#denovo only
+denovo_input_list = [
+    OUTDIR / "status" / "denovo.collate.blast.txt",
+    OUTDIR / "status" / "denovo.mlst.collate.txt",
+    OUTDIR / "tree" / "ska_alignment.fasta",
+    OUTDIR / "tree" / f"{ORG}.tree",
+    expand(OUTDIR / "status" / "denovo.quast.{sample}.txt", sample=SAMPLES)
+]
+#ref-denovo_only
+ref_denovo_input_list = [
+    OUTDIR / "status" / "ref-denovo.collage.coverage.txt",
+    OUTDIR / "status" / "ref-denovo.collate.blast.txt",
+    OUTDIR / "status" / "ref-denovo.mlst.collate.txt",
+    expand(OUTDIR / "status" / "ref-denovo.quast.{sample}.txt", sample=SAMPLES)
+]
+
+#only when both run
+only_both_list = [
+    expand(OUTDIR / "status" / "dnadiff.{sample}.txt", sample=SAMPLES)
+]
+
+#choosing inputs
+if config["mode"] == "denovo":
+	input_list = denovo_input_list
+elif config["mode"] == "reference-denovo":
+	input_list = ref_denovo_input_list
+elif config["mode"] == "both":
+	input_list = denovo_input_list + ref_denovo_input_list + only_both_list
+else:
+	print(config["mode"], " is an invalid mode. Modes are limited to 'denovo', 'reference-denovo', or 'both'.")
+
+#metrics common to all modes
+input_list.append(expand(OUTDIR / "{sample}" / "status" / "fastp_metrics.{sample}.txt", sample=SAMPLES))
+
 rule all:
 	input:
-		# denovo
-		OUTDIR / "status" / "denovo.collate.blast.txt",
-		OUTDIR / "status" / "denovo.mlst.collate.txt",
-		OUTDIR / "tree" / "ska_alignment.fasta",
-		OUTDIR / "tree" / f"{ORG}.tree",
-		# ref-denovo
-		# OUTDIR / "status" / "ref-denovo.collage.coverage.txt",
-		# OUTDIR / "status" / "ref-denovo.collate.blast.txt",
-		# OUTDIR / "status" / "ref-denovo.mlst.collate.txt",
+		input_list
 
 # common modules
 include: "rules/1-trim.smk"
 include: "rules/2-scrub.smk"
 include: "rules/3-qc.smk"
+include: "rules/dnadiff.smk"
+
 
 # modes module
 if config["mode"] == "denovo":
