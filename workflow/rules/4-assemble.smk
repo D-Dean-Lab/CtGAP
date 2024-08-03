@@ -90,12 +90,31 @@ rule rename:
 	input:
 		filled = rules.gapfiller.output.filled
 	output:
-		renamed = OUTDIR / "{sample}" / "denovo" / "{sample}.final.fasta",
+		renamed = OUTDIR / "{sample}" / "denovo" / "denovo_{sample}.final.fasta",
 	params:
 		sample_name = lambda w: w.sample
 	conda: "../envs/misc.yaml"
 	shell:"""
 	seqkit replace -p "(.*)" -r '{params.sample_name}_contig{{nr}}' {input.filled} > {output.renamed} 
+	"""
+
+rule quast:
+	message: "genome quality check"
+	input:
+		contig  = rules.rename.output.renamed
+	output:
+		quasted = directory(OUTDIR / "{sample}" / "quast_denovo_report"),
+		status = OUTDIR / "status" / "denovo.quast.{sample}.txt",
+	conda: "../envs/misc.yaml"
+	log: OUTDIR / "{sample}" / "log" / "quast_denovo.{sample}.log"
+	threads: 5
+	shell:"""
+	quast \
+	{input.contig} \
+	-t {threads} \
+	-o {output.quasted} > {log} 2>&1
+
+	touch {output.status}
 	"""
 
 rule blast_ompa:
@@ -247,4 +266,3 @@ rule tree:
 	--tree-builder-args="-alrt {params.replicates} -B {params.replicates}" \
 	--nthreads {threads} > {log} 2>&1
 	"""
-	

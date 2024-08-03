@@ -41,10 +41,10 @@ rule bowtie:
 	-2 {input.r2} \
 	--threads {threads} | \
 	samtools view -bSh - | \
-	samtools sort -@{threads} \
+	samtools sort -n -@{threads} \
 	-o {output.bam} > {log} 2>&1
 
-	samtools index {output.bam}
+	#samtools index {output.bam}
 
 	touch {output.status}
 	"""
@@ -194,12 +194,34 @@ rule ref_rename:
 	input:
 		filled = rules.ref_gapfiller.output.filled
 	output:
-		renamed = OUTDIR / "{sample}" / "ref-denovo" / "{sample}.final.fasta",
+		renamed = OUTDIR / "{sample}" / "ref-denovo" / "ref-denovo_{sample}.final.fasta",
 	params:
 		sample_name = lambda w: w.sample
 	conda: "../envs/misc.yaml"
 	shell:"""
 	seqkit replace -p "(.*)" -r '{params.sample_name}_contig{{nr}}' {input.filled} > {output.renamed} 
+	"""
+
+rule ref_quast:
+	message: "genome quality check"
+	input:
+		contig  = rules.ref_rename.output.renamed,
+		reference = REF,
+	output:
+		quasted = directory(OUTDIR / "{sample}" / "quast_ref-denovo_output"),
+		status = OUTDIR / "status" / "ref-denovo.quast.{sample}.txt",
+	conda: "../envs/misc.yaml"
+	log: OUTDIR / "{sample}" / "log" / "quast_ref-denovo.{sample}.log"
+	threads: 5
+	shell:"""
+	quast \
+	{input.contig} \
+	-r {input.reference} \
+	-t {threads} \
+	-o {output.quasted} > {log} 2>&1
+
+
+	touch {output.status}
 	"""
 
 rule ref_blast_ompa:
