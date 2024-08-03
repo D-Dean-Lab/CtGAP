@@ -7,3 +7,5 @@ dependencies:
   - blast
   - seqkit
   - bedtools
+  - quast
+  - mummer
