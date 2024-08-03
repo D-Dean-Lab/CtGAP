@@ -1,4 +1,4 @@
-rule scrub:
+ rule scrub:
 	input:
 		r1 = rules.fastp.output.r1,
 		r2 = rules.fastp.output.r2,
@@ -7,6 +7,8 @@ rule scrub:
 		r2 = OUTDIR / "{sample}" / "scrub" / "{sample}_trim_scrub_R2.fastq.gz",
 		r1tmp = OUTDIR / "{sample}" / "scrub" / "{sample}_scrub_first_R1.fastq.gz",
 		r2tmp = OUTDIR / "{sample}" / "scrub" / "{sample}_scrub_first_R2.fastq.gz",
+		json_host = OUTDIR / "{sample}" / "scrub" / "{sample}_remove_host.json",
+		json_ct = OUTDIR / "{sample}" / "scrub" / "{sample}_ct_extract.json",
 		status = OUTDIR / "{sample}" / "status" / "scrub.{sample}.txt"
 	params:
 		db = KRAKENDB,
@@ -29,6 +31,7 @@ rule scrub:
 	--minimap2-index {params.human} \
 	--kraken-threads {threads} \
 	--keep \
+	--json {output.json_host} \
 	--workdir {params.workdir:q} 2> {log}	
 
 	echo -e "\nScrubby Kraken Extract \n" >> {log}
@@ -39,6 +42,7 @@ rule scrub:
 	--extract \
 	--kraken-taxa {params.kraken_taxa_extract} \
 	--kraken-reads {params.workdir}/0-{params.dbname}.kraken \
+	--json {output.json_ct} \
 	--kraken-report {params.workdir}/0-{params.dbname}.report 2>> {log}
 
 	touch {output.status}
