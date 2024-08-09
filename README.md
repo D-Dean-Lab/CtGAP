@@ -17,19 +17,27 @@ git clone https://github.com/ammaraziz/ctgap
 mamba install -c bioconda snakemake 
 ```
 
-Manually install rust/scrubby
+Manually install rust/scrubby. Make sure it is the newest release (v0.3.0 updated 07/01/2024)
 ```
-mamba install -c conda-forge rust
-cargo install scrubby
+git clone https://github.com/esteinig/scrubby
+cd scrubby && cargo build --release
+./target/release/scrubby --help
 ```
+4. Install `kraken2`:
+```
+./install_kraken2.sh $KRAKEN2_DIR
+cp $KRAKEN2_DIR/kraken2{,-build,-inspect} $HOME/bin
+```
+(Replace `$KRAKEN2_DIR` above with the directory where you want to install Kraken 2's programs/scripts.)
 
-4. Download the human genome, rename to `resources/grch38.fasta`
+5. Download the human genome, rename to `resources/grch38.fasta`
 	- [From NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
 
-5. Download one of the kraken dbs with bacterial genomes, rename to `resources/standardDB`:
+6. Download one of the kraken dbs with bacterial genomes, rename to `resources/standardDB`:
 	- https://benlangmead.github.io/aws-indexes/k2
 
-6. Done - The pipeline will handle the dependencies internally.
+7. Done - The pipeline will handle the dependencies internally. Ensure all 
+downloaded packages and your kraken2 directory are on your path. 
 
 ### Usage
 
