@@ -88,31 +88,21 @@ snakemake -j 8 --use-conda -k
 
 ### Output
 
-- status/: empty .txt files produced at the end of each rule, used by snakemake to determine which rules need to be run and what order to run them in
-
-**Denovo Assembly Results:**
-- denovo.blast.tsv: results of blast nucleotide search on denovo assembled sequences in ompA database to perform ompA genotyping
-- denovo.mlst.ct.results.tsv: genotyping  of all denovo assembled sequences in chlamydiales order of PubMLST database
-- denovo.mlst.generic.results.tsv: genotyping  of all denovo assembled sequences in _C. trachomatis_ species of PubMLST database
-- denovo.mlst.plasmid.results.tsv: genotyping  of all denovo assembled sequences in PubMLST's plasmid database
-- ct.tree: phylogenetic tree of all denovo assembled sequences and reference sequences
-- tree/:
-	- input.list: list of all denovo assembled and reference sequences along with their filepaths
-	- iqtree.log: log output of tree generation
-	- ska_alignment-delim.fasta.contree: phylogenetic tree topology of aligned sequences
-	- ska_alignment-delim.fasta.log: log output of alignment process
-	- ska_alignment-delim.fasta.splits.nex: NEXUS file format of phylogenetic tree
-	- ska_alignment-delim.iqtree.log: duplicate of ska_alignment-delim.fasta.log
-	- ska_alignment.fasta: all sequences aligned to reference sequences
-	- ska_alignment.fasta.csv: count of each base type in every sequence (assembled and reference)
-	- ska.log: log output of ska2
-
-**Reference Assembly Results:**
-- ref-denovo.blast.tsv: results of blast nucleotide search on reference assembled sequences in ompA database to perform ompA genotyping
-- ref-denovo.coverage.tsv: coverage statistics of all reference assembled sequences compared to all reference sequences
-- ref-denovo.mlst.ct.results.tsv: genotyping  of all reference assembled sequences in chlamydiales order of PubMLST database
-- ref-denovo.mlst.generic.results.tsv: genotyping  of all reference assembled sequences in _C. trachomatis_ species of PubMLST database
-- ref-denovo.mlst.plasmid.results.tsv: genotyping  of all reference assembled sequences in PubMLST's plasmid database
+| status/                             | empty .txt files produced at the end of each rule, used by snakemake to determine which rules need to be run and what order to run them in                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| For Denovo Assembly                 |
+| denovo.blast.tsv                    | results of blast nucleotide search on denovo assembled sequences in ompA database to perform ompA genotyping                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| denovo.mlst.ct.results.tsv          | genotyping of all denovo assembled sequences in chlamydiales order of PubMLST database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| denovo.mlst.generic.results.tsv     | genotyping of all denovo assembled sequences in C. trachomatis species of PubMLST database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| denovo.mlst.plasmid.results.tsv     | genotyping of all denovo assembled sequences in PubMLST's plasmid database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ct.tree                             | phylogenetic tree of all denovo assembled sequences and reference sequences                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| tree/:                              | input.list: list of all denovo assembled and reference sequences along with their filepaths<br>iqtree.log: log output of tree generation<br>ska_alignment-delim.fasta.contree: phylogenetic tree topology of aligned sequences<br>ska_alignment-delim.fasta.log: log output of alignment process<br>ska_alignment-delim.fasta.splits.nex: NEXUS file format of phylogenetic tree<br>ska_alignment-delim.iqtree.log: duplicate of ska_alignment-delim.fasta.log<br>ska_alignment.fasta: all sequences aligned to reference sequences<br>ska_alignment.fasta.csv: count of each base type in every sequence (assembled and reference)<br>ska.log: log output of ska2 |
+| For Reference Assembly              |
+| ref-denovo.blast.tsv                | results of blast nucleotide search on reference assembled sequences in ompA database to perform ompA genotyping                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ref-denovo.coverage.tsv             | coverage statistics of all reference assembled sequences compared to all reference sequences                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ref-denovo.mlst.ct.results.tsv      | genotyping of all reference assembled sequences in chlamydiales order of PubMLST database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ref-denovo.mlst.generic.results.tsv | genotyping of all reference assembled sequences in C. trachomatis species of PubMLST database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ref-denovo.mlst.plasmid.results.tsv | genotyping of all reference assembled sequences in PubMLST's plasmid database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 **For Each Sample:**
 - benchmark/: information about how long each rule took
@@ -139,7 +129,7 @@ snakemake -j 8 --use-conda -k
 	- quast_report/:
 		- See [Quast Github page](https://github.com/ablab/quast?tab=readme-ov-file#output)
 	- scaffold/:
-		- See [RagTag wiki] (https://github.com/malonge/RagTag/wiki/scaffold#output)
+		- See [RagTag wiki](https://github.com/malonge/RagTag/wiki/scaffold#output)
 	- shovill/:
 		- See [Shovill Github page](https://github.com/tseemann/shovill?tab=readme-ov-file#output-files)
 
@@ -160,7 +150,7 @@ snakemake -j 8 --use-conda -k
 	- quast_report/:
 		- See [Quast Github page](https://github.com/ablab/quast?tab=readme-ov-file#output)
 	- scaffold/:
-		- See [RagTag wiki] (https://github.com/malonge/RagTag/wiki/scaffold#output)
+		- See [RagTag wiki](https://github.com/malonge/RagTag/wiki/scaffold#output)
 	- shovill/:
 		- See [Shovill Github page](https://github.com/tseemann/shovill?tab=readme-ov-file#output-files)
 
