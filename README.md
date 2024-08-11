@@ -28,7 +28,7 @@ cd scrubby && cargo build --release
 ./install_kraken2.sh $KRAKEN2_DIR
 cp $KRAKEN2_DIR/kraken2{,-build,-inspect} $HOME/bin
 ```
-	- (Replace `$KRAKEN2_DIR` above with the directory where you want to install Kraken 2's programs/scripts.)
+- (Replace `$KRAKEN2_DIR` above with the directory where you want to install Kraken 2's programs/scripts.)
 
 6. Download the human genome, rename to `resources/grch38.fasta`
 	- [From NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
@@ -49,11 +49,11 @@ downloaded packages and your kraken2 directory are on your path.
 
 3. In ctgap/config/samples.csv, follow the examples to list all samples, runtypes, and the absolute paths to each sample
 4. Update ctgap/config/config.yaml as needed for your run. Below are values you can update.
-- indir is the path to your input folder
-- outdir is the path to your desired output folder. 
-- sample_sheet is the path to the samples.csv file you are using.
-- mode will tell the pipeline what type of assembly to perform 
-- reference will be the reference sequence your samples will be compared to. You need to have one even if doing denovo assembly
+- `indir` is the path to your input folder
+- `outdir` is the path to your desired output folder. 
+- `sample_sheet` is the path to the samples.csv file you are using.
+- `mode` will tell the pipeline what type of assembly to perform 
+- `reference` will be the reference sequence your samples will be compared to. You need to have one even if doing denovo assembly
 5. In `ctgap/` folder run the pipeline:
 ```
 snakemake -j 8 --use-conda -k
@@ -69,20 +69,103 @@ snakemake -j 8 --use-conda -k
 - Spades
 - Shovill
 - Bowtie2
-- Samtools
+- Samtools=1.19
+- Bcftools
+- Bedtools
 - Mummer
 - fastp
 - scrubby
-- bbmap (bbnorm)
 - kraken2
+- minimap2
 - multiqc
-- blast+
 - quast
+- ragtag
+- gap2seq
+- blast+
 - pymlst
+- augur
+- ska2
 
 ### Output
 
-TBA
+- status/: empty .txt files produced at the end of each rule, used by snakemake to determine which rules need to be run and what order to run them in
+
+**Denovo Assembly Results:**
+- denovo.blast.tsv: results of blast nucleotide search on denovo assembled sequences in ompA database to perform ompA genotyping
+- denovo.mlst.ct.results.tsv: genotyping  of all denovo assembled sequences in chlamydiales order of PubMLST database
+- denovo.mlst.generic.results.tsv: genotyping  of all denovo assembled sequences in _C. trachomatis_ species of PubMLST database
+- denovo.mlst.plasmid.results.tsv: genotyping  of all denovo assembled sequences in PubMLST's plasmid database
+- ct.tree: phylogenetic tree of all denovo assembled sequences and reference sequences
+- tree/:
+	- input.list: list of all denovo assembled and reference sequences along with their filepaths
+	- iqtree.log: log output of tree generation
+	- ska_alignment-delim.fasta.contree: phylogenetic tree topology of aligned sequences
+	- ska_alignment-delim.fasta.log: log output of alignment process
+	- ska_alignment-delim.fasta.splits.nex: NEXUS file format of phylogenetic tree
+	- ska_alignment-delim.iqtree.log: duplicate of ska_alignment-delim.fasta.log
+	- ska_alignment.fasta: all sequences aligned to reference sequences
+	- ska_alignment.fasta.csv: count of each base type in every sequence (assembled and reference)
+	- ska.log: log output of ska2
+
+**Reference Assembly Results:**
+- ref-denovo.blast.tsv: results of blast nucleotide search on reference assembled sequences in ompA database to perform ompA genotyping
+- ref-denovo.coverage.tsv: coverage statistics of all reference assembled sequences compared to all reference sequences
+- ref-denovo.mlst.ct.results.tsv: genotyping  of all reference assembled sequences in chlamydiales order of PubMLST database
+- ref-denovo.mlst.generic.results.tsv: genotyping  of all reference assembled sequences in _C. trachomatis_ species of PubMLST database
+- ref-denovo.mlst.plasmid.results.tsv: genotyping  of all reference assembled sequences in PubMLST's plasmid database
+
+**For Each Sample:**
+- benchmark/: information about how long each rule took
+- log/: log outputs of each step, useful for debugging
+- scrub/:
+	- scrubby_temp/: kraken2 database and human genome sequences used by scrubby
+	- \_scrub\_first\_*.fastq.gz: first scrub, samples with reads classified as human (host), Archaea, Eukaryota, Holozoa, and Nucletmycea removed
+	- \_trim\_scrub\_*.fastq.gz: second scrub, extracted Chlamydiales reads from first scrub results
+	- ct\_extract.json: scrub statistics after removing Archaea, Eukaryota, Holozoa, and Nucletmycea reads
+	- \_remove\_host.json: scrub statistics after removing human reads
+- trim/:
+	- .fastq.gz: trimmed samples
+	- .html: fastp trim statistics (number of reads and bases before and after trimming, sequence content, etc)
+	- .json: json version of html
+
+- (With denovo mode enabled) denovo/:
+	- denovo_{sample}.final.fasta: final denovo assembled sequence
+	- blast/blast.ompa.tab: tab separated blast nucleotide search for this particular sample (1 row of denovo.blast.tsv)
+	- gap2seq/filled.fasta: filled in scaffold according to trimmed and scrubbed sequences
+	- mlst/:
+		- {sample}.genome.chlamydiales.mlst.txt: genotyping in PubMLST database of assembled sequence in chlamydiales order (1 row in denovo.mlst.generic.results.tsv)
+		- {sample}.genome.ctrachomatis.mlst.txt: genotyping in PubMLST database of assembled sequence in _C. trachomatis_ species (1 row in denovo.mlst.ct.results.tsv)
+		- {sample}.genome.plasmid.mlst.txt: genotyping in PubMLST database of assembled sequence in plasmid database (1 row in denovo.mlst.plasmid.results.tsv)
+	- quast_report/:
+		- See [Quast Github page](https://github.com/ablab/quast?tab=readme-ov-file#output)
+	- scaffold/:
+		- See [RagTag wiki] (https://github.com/malonge/RagTag/wiki/scaffold#output)
+	- shovill/:
+		- See [Shovill Github page](https://github.com/tseemann/shovill?tab=readme-ov-file#output-files)
+
+- Additional output with reference assembly mode enabled, ref-denovo/:
+	- ref-denovo_{sample}.final.fasta: final reference assembled sequence
+	- blast/blast.ompa.tab: tab separated blast nucleotide search for this particular sample (1 row of ref-denovo.blast.tsv)
+	- bowtie2/6276.bam: alignment of cleaned reads to reference sequence
+	- bowtie_ref24/:
+		- {sample}.coverage.ref24.tsv: coverage statistics of this sample and reference sequences (part of ref-denovo.coverage.tsv)
+		- {sample}.ref24.bam: alignment of cleaned reads to all reference sequences
+		- {sample}.ref24.bam.bai: indexes for {sample}.ref24.bam
+		- {sample}.tmp.cov.tsv: {sample}.coverage.ref24.tsv without sample_name column
+	- gap2seq/filled.fasta: filled in scaffold according to trimmed and scrubbed sequences
+	- mlst/:
+		- {sample}.genome.chlamydiales.mlst.txt: genotyping in PubMLST database of assembled sequence in chlamydiales order (1 row in ref-denovo.mlst.generic.results.tsv)
+		- {sample}.genome.ctrachomatis.mlst.txt: genotyping in PubMLST database of assembled sequence in _C. trachomatis_ species (1 row in ref-denovo.mlst.ct.results.tsv)
+		- {sample}.genome.plasmid.mlst.txt: genotyping in PubMLST database of assembled sequence in plasmid database (1 row in ref-denovo.mlst.plasmid.results.tsv)
+	- quast_report/:
+		- See [Quast Github page](https://github.com/ablab/quast?tab=readme-ov-file#output)
+	- scaffold/:
+		- See [RagTag wiki] (https://github.com/malonge/RagTag/wiki/scaffold#output)
+	- shovill/:
+		- See [Shovill Github page](https://github.com/tseemann/shovill?tab=readme-ov-file#output-files)
+
+- Additional output ith both enabled: 
+	- See [DNADiff Github page](https://github.com/garviz/MUMmer/blob/master/docs/dnadiff.README)
 
 ### Cite
 
