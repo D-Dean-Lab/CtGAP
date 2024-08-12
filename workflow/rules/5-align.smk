@@ -26,8 +26,8 @@ rule bowtie:
 		r2 = rules.scrub.output.r2,
 		status = rules.index.output.status,
 	output:
-		bam = OUTDIR / "{sample}" / "ref-denovo" / "{sample}.bam",
-		status = OUTDIR / "status" / "bowtie2.{sample}.txt",
+		bam = OUTDIR / "{sample}" / "ref-denovo" / "bowtie2" / "{sample}.bam",
+		status = OUTDIR / "status" / "ref-denovo.bowtie2.{sample}.txt",
 	params:
 		prefix = rules.index.params.prefix_ref,
 		loc = rules.index.params.loc_ref,
@@ -41,10 +41,10 @@ rule bowtie:
 	-2 {input.r2} \
 	--threads {threads} | \
 	samtools view -bSh - | \
-	samtools sort -@{threads} \
+	samtools sort -n -@{threads} \
 	-o {output.bam} > {log} 2>&1
 
-	samtools index {output.bam}
+	#samtools index {output.bam}
 
 	touch {output.status}
 	"""
@@ -56,14 +56,14 @@ rule bowtie_ref24:
 		r2 = rules.scrub.output.r2,
 		status = rules.index.output.status,
 	output:
-		bam = OUTDIR / "{sample}" / "ref-denovo" / "{sample}.ref24.bam",
-		coverage = OUTDIR / "{sample}" / "ref-denovo" / "coverage.ref24.{sample}.tsv",
-		status = OUTDIR / "status" / "bowtie2.ref24.{sample}.txt",
+		bam = OUTDIR / "{sample}" / "ref-denovo" / "bowtie_ref24" / "{sample}.ref24.bam",
+		coverage = OUTDIR / "{sample}" / "ref-denovo" / "bowtie_ref24" / "{sample}.coverage.ref24.tsv",
+		status = OUTDIR / "status" / "ref-denovo.bowtie2.ref24.{sample}.txt",
 	params:
 		prefix = rules.index.params.prefix_ref24,
 		loc = rules.index.params.loc_ref24,
 		sample_name = lambda w: w.sample,
-		tmp = lambda w: OUTDIR / f"{w.sample}" / "ref-denovo" / "tmp.cov.tsv",
+		tmp = lambda w: OUTDIR / f"{w.sample}" / "ref-denovo" / "bowtie_ref24" / f"{w.sample}.tmp.cov.tsv",
 	threads: config["threads"]["bowtie"]
 	log: OUTDIR / "{sample}" / "log" / "bowtie2.ref24.{sample}.log"
 	conda: "../envs/bowtie.yaml"
@@ -89,9 +89,9 @@ rule bamtofastq:
 	input:
 		bam = rules.bowtie.output.bam,
 	output:
-		r1 = OUTDIR / "{sample}" / "ref-denovo" / "{sample}_refg_r1.fastq.gz",
-		r2 = OUTDIR / "{sample}" / "ref-denovo" / "{sample}_refg_r2.fastq.gz",
-		status = OUTDIR / "status" / "bamtofastq.{sample}.txt",
+		r1 = OUTDIR / "{sample}" / "ref-denovo" / "bamtofastq" / "{sample}_refg_r1.fastq.gz",
+		r2 = OUTDIR / "{sample}" / "ref-denovo" / "bamtofastq" / "{sample}_refg_r2.fastq.gz",
+		status = OUTDIR / "status" / "ref-denovo.bamtofastq.{sample}.txt",
 	threads: config["threads"]["bedtools"]
 	log: OUTDIR / "{sample}" / "log" / "bowtie2.{sample}.log"
 	conda: "../envs/misc.yaml"
@@ -194,12 +194,33 @@ rule ref_rename:
 	input:
 		filled = rules.ref_gapfiller.output.filled
 	output:
-		renamed = OUTDIR / "{sample}" / "ref-denovo" / "{sample}.final.fasta",
+		renamed = OUTDIR / "{sample}" / "ref-denovo" / "ref-denovo_{sample}.final.fasta",
 	params:
 		sample_name = lambda w: w.sample
 	conda: "../envs/misc.yaml"
 	shell:"""
 	seqkit replace -p "(.*)" -r '{params.sample_name}_contig{{nr}}' {input.filled} > {output.renamed} 
+	"""
+
+rule ref_quast:
+	message: "genome quality check"
+	input:
+		contig  = rules.ref_rename.output.renamed,
+		reference = REF,
+	output:
+		quasted = directory(OUTDIR / "{sample}" / "ref-denovo" / "quast_report"),
+		status = OUTDIR / "status" / "ref-denovo.quast.{sample}.txt",
+	conda: "../envs/misc.yaml"
+	log: OUTDIR / "{sample}" / "log" / "quast_ref-denovo.{sample}.log"
+	threads: 5
+	shell:"""
+	quast \
+	{input.contig} \
+	-t {threads} \
+	-o {output.quasted} > {log} 2>&1
+
+
+	touch {output.status}
 	"""
 
 rule ref_blast_ompa:
@@ -234,7 +255,7 @@ rule ref_mlst:
 		generic = OUTDIR / "{sample}" / "ref-denovo" / "mlst" / "{sample}.genome.chlamydiales.mlst.txt",
 		ct = OUTDIR / "{sample}" / "ref-denovo" / "mlst" / "{sample}.genome.ctrachomatis.mlst.txt",
 		plasmid =  OUTDIR / "{sample}" / "ref-denovo" / "mlst" / "{sample}.genome.plasmid.mlst.txt",
-		status = OUTDIR / "{sample}" / "status" / "ref-denovo.mlst.{sample}.txt",
+		status = OUTDIR / "status" / "ref-denovo.mlst.{sample}.txt",
 	log: OUTDIR / "{sample}" / "log" / "ref-denovo.mlst.{sample}.log"
 	benchmark: OUTDIR / "{sample}" / "benchmark" / "ref-denovo.mlst.{sample}.txt"
 	conda: "../envs/mlst.yaml"
@@ -264,10 +285,10 @@ rule ref_mlst:
 
 rule ref_collate_coverage:
 	input:
-		coverages = expand(OUTDIR / "{sample}" / "ref-denovo" / "coverage.ref24.{sample}.tsv", sample = SAMPLES),
+		coverages = expand(OUTDIR / "{sample}" / "ref-denovo" / "bowtie_ref24" / "{sample}.coverage.ref24.tsv", sample = SAMPLES),
 	output:
 		coverages = OUTDIR / "ref-denovo.coverage.tsv",
-		status = OUTDIR / "status" / "ref-denovo.collage.coverage.txt",
+		status = OUTDIR / "status" / "ref-denovo.collate.coverage.txt",
 	threads: 1
 	conda: "../envs/misc.yaml"
 	shell:"""
