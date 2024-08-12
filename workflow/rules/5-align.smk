@@ -223,10 +223,6 @@ rule ref_quast:
 	touch {output.status}
 	"""
 
-
-	touch {output.status}
-	"""
-
 rule ref_blast_ompa:
 	input:
 		contig = rules.ref_rename.output.renamed,
@@ -259,7 +255,7 @@ rule ref_mlst:
 		generic = OUTDIR / "{sample}" / "ref-denovo" / "mlst" / "{sample}.genome.chlamydiales.mlst.txt",
 		ct = OUTDIR / "{sample}" / "ref-denovo" / "mlst" / "{sample}.genome.ctrachomatis.mlst.txt",
 		plasmid =  OUTDIR / "{sample}" / "ref-denovo" / "mlst" / "{sample}.genome.plasmid.mlst.txt",
-		status = OUTDIR / "{sample}" / "status" / "ref-denovo.mlst.{sample}.txt",
+		status = OUTDIR / "status" / "ref-denovo.mlst.{sample}.txt",
 	log: OUTDIR / "{sample}" / "log" / "ref-denovo.mlst.{sample}.log"
 	benchmark: OUTDIR / "{sample}" / "benchmark" / "ref-denovo.mlst.{sample}.txt"
 	conda: "../envs/mlst.yaml"
