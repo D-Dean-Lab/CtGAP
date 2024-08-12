@@ -285,10 +285,10 @@ rule ref_mlst:
 
 rule ref_collate_coverage:
 	input:
-		coverages = expand(OUTDIR / "{sample}" / "ref-denovo" / "coverage.ref24.{sample}.tsv", sample = SAMPLES),
+		coverages = expand(OUTDIR / "{sample}" / "ref-denovo" / "bowtie_ref24" / "{sample}.coverage.ref24.tsv", sample = SAMPLES),
 	output:
 		coverages = OUTDIR / "ref-denovo.coverage.tsv",
-		status = OUTDIR / "status" / "ref-denovo.collage.coverage.txt",
+		status = OUTDIR / "status" / "ref-denovo.collate.coverage.txt",
 	threads: 1
 	conda: "../envs/misc.yaml"
 	shell:"""
