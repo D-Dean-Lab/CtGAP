@@ -56,14 +56,14 @@ rule bowtie_ref24:
 		r2 = rules.scrub.output.r2,
 		status = rules.index.output.status,
 	output:
-		bam = OUTDIR / "{sample}" / "ref-denovo" / "{sample}.ref24.bam",
-		coverage = OUTDIR / "{sample}" / "ref-denovo" / "coverage.ref24.{sample}.tsv",
-		status = OUTDIR / "status" / "bowtie2.ref24.{sample}.txt",
+		bam = OUTDIR / "{sample}" / "ref-denovo" / "bowtie_ref24" / "{sample}.ref24.bam",
+		coverage = OUTDIR / "{sample}" / "ref-denovo" / "bowtie_ref24" / "{sample}.coverage.ref24.tsv",
+		status = OUTDIR / "status" / "ref-denovo.bowtie2.ref24.{sample}.txt",
 	params:
 		prefix = rules.index.params.prefix_ref24,
 		loc = rules.index.params.loc_ref24,
 		sample_name = lambda w: w.sample,
-		tmp = lambda w: OUTDIR / f"{w.sample}" / "ref-denovo" / "tmp.cov.tsv",
+		tmp = lambda w: OUTDIR / f"{w.sample}" / "ref-denovo" / "bowtie_ref24" / f"{w.sample}.tmp.cov.tsv",
 	threads: config["threads"]["bowtie"]
 	log: OUTDIR / "{sample}" / "log" / "bowtie2.ref24.{sample}.log"
 	conda: "../envs/bowtie.yaml"
