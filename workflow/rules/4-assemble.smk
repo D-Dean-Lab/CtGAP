@@ -4,7 +4,7 @@ rule shovill:
 		r1 = rules.scrub.output.r1,
 		r2 = rules.scrub.output.r2,
 	output:
-		status = OUTDIR / "status" / "shovill.{sample}.txt",
+		status = OUTDIR / "status" / "denovo.shovill.{sample}.txt",
 		outdir = directory(OUTDIR / "{sample}" / "denovo" / "shovill"),
 		contig = OUTDIR / "{sample}" / "denovo" / "shovill" / "contigs.fa",
 	params:
@@ -90,12 +90,31 @@ rule rename:
 	input:
 		filled = rules.gapfiller.output.filled
 	output:
-		renamed = OUTDIR / "{sample}" / "denovo" / "{sample}.final.fasta",
+		renamed = OUTDIR / "{sample}" / "denovo" / "denovo_{sample}.final.fasta",
 	params:
 		sample_name = lambda w: w.sample
 	conda: "../envs/misc.yaml"
 	shell:"""
 	seqkit replace -p "(.*)" -r '{params.sample_name}_contig{{nr}}' {input.filled} > {output.renamed} 
+	"""
+
+rule quast:
+	message: "genome quality check"
+	input:
+		contig  = rules.rename.output.renamed
+	output:
+		quasted = directory(OUTDIR / "{sample}" / "denovo" / "quast_report"),
+		status = OUTDIR / "status" / "denovo.quast.{sample}.txt",
+	conda: "../envs/misc.yaml"
+	log: OUTDIR / "{sample}" / "log" / "quast_denovo.{sample}.log"
+	threads: 5
+	shell:"""
+	quast \
+	{input.contig} \
+	-t {threads} \
+	-o {output.quasted} > {log} 2>&1
+
+	touch {output.status}
 	"""
 
 rule blast_ompa:
@@ -200,7 +219,7 @@ rule ska_input_prep:
 		filled = expand(OUTDIR / "{sample}" / "denovo" / "gap2seq" / "filled.fasta", sample = SAMPLES),
 		individual = INDIVIDUAL,
 	output:
-		glist = OUTDIR / "tree" / "input.list",
+		glist = OUTDIR / "tree" / "input.list"
 	params:
 		samples = SAMPLES,
 	threads: 10
@@ -218,7 +237,7 @@ rule ska_alignment:
 		reference = SCAFFOLDREF,
 		organism = ORG,
 	conda: "../envs/tree.yaml"
-	log: OUTDIR / "denovo" / "tree" / "ska.log"
+	log: OUTDIR / "tree" / "ska.log"
 	threads: config["threads"]["ska"]
 	shell:"""
 	workflow/scripts/generate_ska_alignment.py \
@@ -232,13 +251,13 @@ rule tree:
 	input:
 		alignment = rules.ska_alignment.output.alignment
 	output:
-		tree = OUTDIR / "tree" / f"{ORG}.tree"
+		tree = OUTDIR / f"{ORG}.tree"
 	params:
 		replicates = 1000,
 		prefix = ORG
 	conda: "../envs/tree.yaml"
 	threads: config["threads"]["tree"]
-	log: OUTDIR / "denovo" / "tree" / "iqtree.log"
+	log: OUTDIR / "tree" / "iqtree.log"
 	shell:"""
 	augur tree \
 	--alignment {input.alignment} \
@@ -247,4 +266,3 @@ rule tree:
 	--tree-builder-args="-alrt {params.replicates} -B {params.replicates}" \
 	--nthreads {threads} > {log} 2>&1
 	"""
-	
