@@ -7,7 +7,7 @@ rule fastp:
 		r2 = OUTDIR / "{sample}" / "trim" / "{sample}_trim_R2.fastq.gz",
 		html = OUTDIR / "{sample}" / "trim" /"{sample}.html",
 		json = OUTDIR / "{sample}" / "trim" /"{sample}.json",
-		status = OUTDIR / "{sample}" / "status" / "trim.{sample}.txt",
+		status = OUTDIR / "status" / "trim.{sample}.txt",
 	params:
 		adapters = ADAPTERS,
 		barcodes = BARCODES,
@@ -40,4 +40,3 @@ rule fastp:
 
 	touch {output.status}
 	"""
-
