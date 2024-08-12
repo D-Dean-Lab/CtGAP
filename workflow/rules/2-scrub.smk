@@ -1,4 +1,4 @@
- rule scrub:
+rule scrub:
 	input:
 		r1 = rules.fastp.output.r1,
 		r2 = rules.fastp.output.r2,
@@ -9,7 +9,7 @@
 		r2tmp = OUTDIR / "{sample}" / "scrub" / "{sample}_scrub_first_R2.fastq.gz",
 		json_host = OUTDIR / "{sample}" / "scrub" / "{sample}_remove_host.json",
 		json_ct = OUTDIR / "{sample}" / "scrub" / "{sample}_ct_extract.json",
-		status = OUTDIR / "{sample}" / "status" / "scrub.{sample}.txt"
+		status = OUTDIR / "status" / "scrub.{sample}.txt"
 	params:
 		db = KRAKENDB,
 		dbname = KRAKENDB.stem,
