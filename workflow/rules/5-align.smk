@@ -26,8 +26,8 @@ rule bowtie:
 		r2 = rules.scrub.output.r2,
 		status = rules.index.output.status,
 	output:
-		bam = OUTDIR / "{sample}" / "ref-denovo" / "{sample}.bam",
-		status = OUTDIR / "status" / "bowtie2.{sample}.txt",
+		bam = OUTDIR / "{sample}" / "ref-denovo" / "bowtie2" / "{sample}.bam",
+		status = OUTDIR / "status" / "ref-denovo.bowtie2.{sample}.txt",
 	params:
 		prefix = rules.index.params.prefix_ref,
 		loc = rules.index.params.loc_ref,
