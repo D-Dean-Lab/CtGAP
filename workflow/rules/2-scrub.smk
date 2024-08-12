@@ -7,7 +7,9 @@ rule scrub:
 		r2 = OUTDIR / "{sample}" / "scrub" / "{sample}_trim_scrub_R2.fastq.gz",
 		r1tmp = OUTDIR / "{sample}" / "scrub" / "{sample}_scrub_first_R1.fastq.gz",
 		r2tmp = OUTDIR / "{sample}" / "scrub" / "{sample}_scrub_first_R2.fastq.gz",
-		status = OUTDIR / "{sample}" / "status" / "scrub.{sample}.txt"
+		json_host = OUTDIR / "{sample}" / "scrub" / "{sample}_remove_host.json",
+		json_ct = OUTDIR / "{sample}" / "scrub" / "{sample}_ct_extract.json",
+		status = OUTDIR / "status" / "scrub.{sample}.txt"
 	params:
 		db = KRAKENDB,
 		dbname = KRAKENDB.stem,
@@ -20,7 +22,7 @@ rule scrub:
 	log: OUTDIR / "{sample}" / "log" / "scrub.{sample}.log"
 	benchmark: OUTDIR / "{sample}" / "benchmark" / "scrub.{sample}.txt"
 	shell:"""
-	scrubby scrub-reads \
+	scrubby --force scrub-reads \
 	-i {input.r1} {input.r2} \
 	-o {output.r1tmp} {output.r2tmp} \
 	--kraken-db {params.db} \
@@ -29,16 +31,18 @@ rule scrub:
 	--minimap2-index {params.human} \
 	--kraken-threads {threads} \
 	--keep \
+	--json {output.json_host} \
 	--workdir {params.workdir:q} 2> {log}	
 
 	echo -e "\nScrubby Kraken Extract \n" >> {log}
 
-	scrubby scrub-kraken \
+	scrubby --force scrub-kraken \
 	-i {output.r1tmp} {output.r2tmp} \
 	-o {output.r1} {output.r2} \
 	--extract \
 	--kraken-taxa {params.kraken_taxa_extract} \
 	--kraken-reads {params.workdir}/0-{params.dbname}.kraken \
+	--json {output.json_ct} \
 	--kraken-report {params.workdir}/0-{params.dbname}.report 2>> {log}
 
 	touch {output.status}
