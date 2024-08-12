@@ -89,9 +89,9 @@ rule bamtofastq:
 	input:
 		bam = rules.bowtie.output.bam,
 	output:
-		r1 = OUTDIR / "{sample}" / "ref-denovo" / "{sample}_refg_r1.fastq.gz",
-		r2 = OUTDIR / "{sample}" / "ref-denovo" / "{sample}_refg_r2.fastq.gz",
-		status = OUTDIR / "status" / "bamtofastq.{sample}.txt",
+		r1 = OUTDIR / "{sample}" / "ref-denovo" / "bamtofastq" / "{sample}_refg_r1.fastq.gz",
+		r2 = OUTDIR / "{sample}" / "ref-denovo" / "bamtofastq" / "{sample}_refg_r2.fastq.gz",
+		status = OUTDIR / "status" / "ref-denovo.bamtofastq.{sample}.txt",
 	threads: config["threads"]["bedtools"]
 	log: OUTDIR / "{sample}" / "log" / "bowtie2.{sample}.log"
 	conda: "../envs/misc.yaml"
