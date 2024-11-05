@@ -24,17 +24,17 @@ use_conda: true
 
 # numbe of cpus used per tool/rule
 threads:
-  fastp: 10
-  scrubby: 12
-  shovill: 12
-  spades: 12
-  blast: 5
-  ragtag: 10
-  bowtieindex: 5
-  bowtie: 10
-  samtools: 10
+  fastp: 40
+  scrubby: 48
+  shovill: 48
+  spades: 48
+  blast: 12
+  ragtag: 40
+  bowtieindex: 40
+  bowtie: 40
+  samtools: 36
   mlst: 1
-  gap2seq: 10
+  gap2seq: 40
   bedtools: 1
-  ska: 5
-  tree: 5
+  ska: 48
+  tree: 20
