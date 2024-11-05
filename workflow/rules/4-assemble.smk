@@ -99,7 +99,7 @@ rule rename:
 	"""
 
 rule quast:
-	message: "genome quality check"
+	message: "genome assembly statistics"
 	input:
 		contig  = rules.rename.output.renamed
 	output:
