@@ -47,19 +47,17 @@ downloaded packages and your kraken2 directory are on your path.
 	- Ensure they're named as follows: `{sample_name}_{direction}.fastq.gz`. 
         - eg `SRR12345_R1.fastq.gz` and `SRR12345_R2.fastq.gz`.
 
-3. In ctgap/config/samples.csv, follow the examples to list all samples, runtypes, and the absolute paths to each sample
-4. Update ctgap/config/config.yaml as needed for your run. Below are values you can update.
+3. Update ctgap/config/config.yaml as needed for your run. Below are values you can update.
 - `indir` is the path to your input folder
 - `outdir` is the path to your desired output folder. 
-- `sample_sheet` is the path to the samples.csv file you are using.
 - `mode` will tell the pipeline what type of assembly to perform 
 - `reference` will be the reference sequence your samples will be compared to. You need to have one even if doing denovo assembly
-5. In `ctgap/` folder run the pipeline:
+4. In `ctgap/` folder run the pipeline:
 ```
 snakemake -j 8 --use-conda -k
 ```
 
-- `-j 8` specifies the number of threads to use in total.
+- `-j 8` specifies the number of threads to use in total. You can change this number based on your needs.
 - `--use-conda` tells snakemake to install the dependencies.
 - `-k` tells snakemake to keep going if a sample fails.
 

@@ -1,9 +1,8 @@
 indir : /path/to/input
 outdir: /path/to/output
-sample_sheet: config/samples.csv
 
 mode: both # [denovo, reference-denovo, both]
-reference: plurality # [plurality, reference_24, reference_name]
+reference: plurality # [plurality, reference_24, full_reference_filename]
 organism: ct # [ct]
 resourcesPath: resources/
 
