@@ -22,13 +22,12 @@ rule fastp_qc:
 
 rule multiqc:
 	input:
-		#status_spades = expand(OUTDIR / "status" / "spades.{sample}.txt", sample = SAMPLES),
-		#status_shovill = expand(OUTDIR / "status" / "shovill.{sample}.txt", sample = SAMPLES)
-		status_fastp_qc = expand(OUTDIR / "{sample}" / "status" / "fastp_qc.{sample}.txt")
+		status_spades = expand(OUTDIR / "status" / "spades.{sample}.txt", sample = SAMPLES),
+		status_shovill = expand(OUTDIR / "status" / "shovill.{sample}.txt", sample = SAMPLES)
 	output:
 		report = OUTDIR / "multiqc_report.html"
 	params:
-		fastp_dir = OUTDIR / "{sample}" / "qc"
+		fastp_dir = OUTDIR / "qc"
 	log: OUTDIR / "log" / "multiqc.log",
 	conda: "../envs/misc.yaml",
 	shell:"""
