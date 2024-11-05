@@ -4,7 +4,7 @@ rule index:
 		reference = REF,
 		refset24 = REFSET,
 	output:
-		status = OUTDIR /"status" / "reference.status"
+		status = OUTDIR /"status" / "ref-denovo.index.status"
 	params:
 		prefix_ref = REF.stem,
 		prefix_ref24 =  REFSET.stem,
