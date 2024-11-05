@@ -181,8 +181,8 @@ rule denovo_collate_blast:
 	input:
 		status_blast = expand(OUTDIR / "status" / "denovo.blastn.{sample}.txt", sample = SAMPLES),
 	output:
-		tsv = OUTDIR / "denovo.blast.tsv",
-		status = OUTDIR / "status" / "denovo.collate.blast.txt",
+		tsv = OUTDIR / "denovo.ompA_genovar.blast.tsv",
+		status = OUTDIR / "status" / "denovo.ompA_genovar.collate.blast.txt",
 	params:
 		outdir = OUTDIR,
 		pattern = "**/denovo/blast/*.tab",
