@@ -103,10 +103,10 @@ rule quast:
 	input:
 		contig  = rules.rename.output.renamed
 	output:
-		quasted = directory(OUTDIR / "{sample}" / "denovo" / "quast_report"),
-		status = OUTDIR / "status" / "denovo.quast.{sample}.txt",
+		quasted = directory(OUTDIR / "{sample}" / "denovo" / "assembly_statistics"),
+		status = OUTDIR / "status" / "denovo.assembly_statistics.{sample}.txt",
 	conda: "../envs/misc.yaml"
-	log: OUTDIR / "{sample}" / "log" / "quast_denovo.{sample}.log"
+	log: OUTDIR / "{sample}" / "log" / "denovo.assembly_statistics.{sample}.log"
 	threads: 5
 	shell:"""
 	quast \

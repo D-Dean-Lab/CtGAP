@@ -51,14 +51,14 @@ denovo_input_list = [
     expand(OUTDIR / "status" / "denovo.mlst.collate.txt", sample=SAMPLES),
     expand(OUTDIR / "tree" / "ska_alignment.fasta", sample=SAMPLES),
     expand(OUTDIR / f"{ORG}.tree", sample=SAMPLES),
-    expand(OUTDIR / "status" / "denovo.quast.{sample}.txt", sample=SAMPLES)
+    expand(OUTDIR / "status" / "denovo.assembly_statistics.{sample}.txt", sample=SAMPLES)
 ]
 #ref-denovo_only
 ref_denovo_input_list = [
     expand(OUTDIR / "status" / "ref-denovo.collate.coverage.txt", sample=SAMPLES),
     expand(OUTDIR / "status" / "ref-denovo.ompA_genovar.collate.blast.txt", sample=SAMPLES),
     expand(OUTDIR / "status" / "ref-denovo.mlst.collate.txt", sample=SAMPLES),
-    expand(OUTDIR / "status" / "ref-denovo.quast.{sample}.txt", sample=SAMPLES)
+    expand(OUTDIR / "status" / "ref-denovo.assembly_statistics.{sample}.txt", sample=SAMPLES)
 ]
 #only when both run
 only_both_list = [

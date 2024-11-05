@@ -208,10 +208,10 @@ rule ref_quast:
 		contig  = rules.ref_rename.output.renamed,
 		reference = REF,
 	output:
-		quasted = directory(OUTDIR / "{sample}" / "ref-denovo" / "quast_report"),
-		status = OUTDIR / "status" / "ref-denovo.quast.{sample}.txt",
+		quasted = directory(OUTDIR / "{sample}" / "ref-denovo" / "assembly_statistics"),
+		status = OUTDIR / "status" / "ref-denovo.assembly_statistics.{sample}.txt",
 	conda: "../envs/misc.yaml"
-	log: OUTDIR / "{sample}" / "log" / "quast_ref-denovo.{sample}.log"
+	log: OUTDIR / "{sample}" / "log" / "ref-denovo.assembly_statistics.{sample}.log"
 	threads: 5
 	shell:"""
 	quast \
