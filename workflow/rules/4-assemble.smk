@@ -11,7 +11,7 @@ rule shovill:
 		gsize = config['shovill']['gsize'],
 		depth = config['shovill']['downsample'],
 	conda: "../envs/shovill.yaml"
-	log: OUTDIR / "{sample}" / "log" / "shovill.{sample}.log"
+	log: OUTDIR / "{sample}" / "log" / "denovo.shovill.{sample}.log"
 	benchmark: OUTDIR / "{sample}" / "benchmark" / "shovill.{sample}.txt"
 	threads: config["threads"]["shovill"]
 	shell:"""
@@ -39,7 +39,7 @@ rule scaffold:
 		min_len = config['ragtag']['min_len']
 	threads: config['threads']['ragtag']
 	conda: "../envs/scaffold.yaml"
-	log: OUTDIR / "{sample}" / "log" / "scaffold.{sample}.log"
+	log: OUTDIR / "{sample}" / "log" / "denovo.scaffold.{sample}.log"
 	benchmark: OUTDIR / "{sample}" / "benchmark" / "scaffold.{sample}.txt"
 	shell:"""
 	ragtag.py scaffold \
@@ -123,7 +123,7 @@ rule blast_ompa:
 	output:
 		tab = OUTDIR / "{sample}" / "denovo" / "blast" / "blast.ompa.tab",
 		status = OUTDIR / "status" / "denovo.blastn.{sample}.txt"
-	log: OUTDIR / "{sample}" / "log" / "denovo.blastompa.{sample}.log"
+	log: OUTDIR / "{sample}" / "log" / "denovo.blast.ompa.{sample}.log"
 	params:
 		outfmt = 6,
 		db = OMPABLASTDB,
