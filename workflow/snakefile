@@ -41,7 +41,7 @@ SAMPLE_NAME, PAIR = glob_wildcards(INDIR / "{sample_name}_{pair}.fastq.gz")
 SAMPLES = set(SAMPLE_NAME)
 
 if not SAMPLES:
-	pprint("[yellow] No samples were detected. Check sample sheet (samples.csv) and update sample locations as per the example.[/yellow]")
+	pprint("[yellow] No samples were detected. Check the input variable in the config.yml file and ensure it reflects the complete path to your samples.[/yellow]")
 	sys.exit()
 
 #input files for rule all
