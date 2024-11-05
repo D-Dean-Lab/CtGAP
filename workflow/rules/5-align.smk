@@ -32,7 +32,7 @@ rule bowtie:
 		prefix = rules.index.params.prefix_ref,
 		loc = rules.index.params.loc_ref,
 	threads: config["threads"]["bowtie"]
-	log: OUTDIR / "{sample}" / "log" / "bowtie2.{sample}.log"
+	log: OUTDIR / "{sample}" / "log" / "ref-denovo.bowtie2.{sample}.log"
 	conda: "../envs/bowtie.yaml"
 	shell:"""
 	bowtie2 -x \
@@ -93,7 +93,7 @@ rule bamtofastq:
 		r2 = OUTDIR / "{sample}" / "ref-denovo" / "bamtofastq" / "{sample}_refg_r2.fastq.gz",
 		status = OUTDIR / "status" / "ref-denovo.bamtofastq.{sample}.txt",
 	threads: config["threads"]["bedtools"]
-	log: OUTDIR / "{sample}" / "log" / "bowtie2.{sample}.log"
+	log: OUTDIR / "{sample}" / "log" / "ref-denovo.bamtofastq.{sample}.log"
 	conda: "../envs/misc.yaml"
 	shell:"""
 	bedtools bamtofastq \
@@ -203,7 +203,7 @@ rule ref_rename:
 	"""
 
 rule ref_quast:
-	message: "genome quality check"
+	message: "genome assembly statistics"
 	input:
 		contig  = rules.ref_rename.output.renamed,
 		reference = REF,
