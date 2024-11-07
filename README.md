@@ -33,7 +33,7 @@ cp $KRAKEN2_DIR/kraken2{,-build,-inspect} $HOME/bin
 6. Download the human genome, rename to `resources/grch38.fasta`
 	- [From NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
 
-7. Download one of the kraken dbs with bacterial genomes, rename to `resources/standardDB`:
+7. Download one of the kraken dbs with archea, eukaryote and bacterial genomes, rename to `resources/standardDB`:
 	- https://benlangmead.github.io/aws-indexes/k2
 
 8. Done - The pipeline will handle the dependencies internally. Ensure all 
