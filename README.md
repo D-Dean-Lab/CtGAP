@@ -35,6 +35,7 @@ cp $KRAKEN2_DIR/kraken2{,-build,-inspect} $HOME/bin
 
 7. Download one of the kraken dbs with archea, eukaryote and bacterial genomes, rename to `resources/standardDB`:
 	- https://benlangmead.github.io/aws-indexes/k2
+		We suggest: https://genome-idx.s3.amazonaws.com/kraken/k2_pluspf_08gb_20240904.tar.gz 
 
 8. Done - The pipeline will handle the dependencies internally. Ensure all 
 downloaded packages and your kraken2 directory are on your path. 
