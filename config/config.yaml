@@ -2,7 +2,7 @@ indir : /path/to/input
 outdir: /path/to/output
 
 mode: both # [denovo, reference-denovo, both]
-reference: plurality # [plurality, reference_24, full_reference_filename]
+reference: reference_24 # [plurality, reference_24, full_reference_filename]
 organism: ct # [ct]
 resourcesPath: resources/
 
