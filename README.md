@@ -17,23 +17,25 @@ git clone https://github.com/ammaraziz/ctgap
 mamba install -c bioconda snakemake 
 ```
 
-4. Manually install rust/scrubby. Make sure it is the newest release (v0.3.0 updated 07/01/2024)
+4. Manually install rust/scrubby. Use v0.3.0 (updated 07/01/2024) or later.
 ```
 git clone https://github.com/esteinig/scrubby
 cd scrubby && cargo build --release
 ./target/release/scrubby --help
 ```
+- Ensure scrubby is on your path: `export PATH=$PATH:/path/to/scrubby/target/release`
 5. Install `kraken2`:
 ```
 ./install_kraken2.sh $KRAKEN2_DIR
 cp $KRAKEN2_DIR/kraken2{,-build,-inspect} $HOME/bin
 ```
 - (Replace `$KRAKEN2_DIR` above with the directory where you want to install Kraken 2's programs/scripts.)
+- Ensure the kraken2 directory is on your path: `export PATH=$PATH:/path/to/kraken2_dir`
 
 6. Download the human genome, rename to `resources/grch38.fasta`
 	- [From NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
 
-7. Download one of the kraken dbs with archea, eukaryote and bacterial genomes, rename to `resources/standardDB`:
+7. Download one of the kraken dbs with archaea, eukaryotic, and bacterial genomes, rename to `resources/standardDB`:
 	- https://benlangmead.github.io/aws-indexes/k2
 		- We suggest: https://genome-idx.s3.amazonaws.com/kraken/k2_pluspf_08gb_20240904.tar.gz 
 
@@ -98,7 +100,7 @@ snakemake -j 8 --use-conda -k
 | ct.tree                             | phylogenetic tree of all denovo assembled sequences and reference sequences                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | tree/                               | input.list: list of all denovo assembled and reference sequences along with their filepaths<br>iqtree.log: log output of tree generation<br>ska_alignment-delim.fasta.contree: phylogenetic tree topology of aligned sequences<br>ska_alignment-delim.fasta.log: log output of alignment process<br>ska_alignment-delim.fasta.splits.nex: NEXUS file format of phylogenetic tree<br>ska_alignment-delim.iqtree.log: duplicate of ska_alignment-delim.fasta.log<br>ska_alignment.fasta: all sequences aligned to reference sequences<br>ska_alignment.fasta.csv: count of each base type in every sequence (assembled and reference)<br>ska.log: log output of ska2 |
 | **For Reference Assembly**          |
-| ref-denovo.blast.tsv                | results of blast nucleotide search on reference assembled sequences in ompA database to perform ompA genotyping                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ref-denovo.ompA.blast.tsv                | results of blast nucleotide search on reference assembled sequences in ompA database to perform ompA genotyping                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ref-denovo.coverage.tsv             | coverage statistics of all reference assembled sequences compared to all reference sequences                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ref-denovo.mlst.ct.results.tsv      | genotyping of all reference assembled sequences in chlamydiales order of PubMLST database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ref-denovo.mlst.generic.results.tsv | genotyping of all reference assembled sequences in C. trachomatis species of PubMLST database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
