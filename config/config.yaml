@@ -22,7 +22,7 @@ ragtag:
 # ensure conda is used without user having to specify
 use_conda: true
 
-# numbe of cpus used per tool/rule
+# number of cpus used per tool/rule
 threads:
   fastp: 40
   scrubby: 48
@@ -37,4 +37,6 @@ threads:
   gap2seq: 40
   bedtools: 1
   ska: 48
-  tree: 20
+  tree: 64
+  quast: 32
+  dnadiff: 8

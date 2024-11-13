@@ -11,7 +11,7 @@ rule dna_diff:
 		status = OUTDIR / "status" / "dnadiff.{sample}.txt",
 	conda: "../envs/misc.yaml"
 	log: OUTDIR / "{sample}" / "log" / "dnadiff.{sample}.log"
-	threads: 5
+	threads: config["threads"]["dnadiff"]
 	params:
 		prefix = directory(OUTDIR / "{sample}" / "dnadiff_report" / "{sample}"),
 	shell:"""

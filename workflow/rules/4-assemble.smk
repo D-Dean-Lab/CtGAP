@@ -107,7 +107,7 @@ rule quast:
 		status = OUTDIR / "status" / "denovo.assembly_statistics.{sample}.txt",
 	conda: "../envs/misc.yaml"
 	log: OUTDIR / "{sample}" / "log" / "denovo.assembly_statistics.{sample}.log"
-	threads: 5
+	threads: config["threads"]["quast"]
 	shell:"""
 	quast \
 	{input.contig} \
