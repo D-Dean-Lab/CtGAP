@@ -174,6 +174,7 @@ rule ref_gapfiller:
 	log: OUTDIR / "{sample}" / "log" / "ref-denovo.gap2seq.{sample}.log"
 	benchmark: OUTDIR / "{sample}" / "benchmark" / "ref-denovo.gap2seq.{sample}.txt"
 	shell:"""
+	set +e
 	Gap2Seq \
 	--scaffolds {input.scaffold} \
 	--filled {output.filled} \
@@ -292,7 +293,7 @@ rule ref_collate_coverage:
 	threads: 1
 	conda: "../envs/misc.yaml"
 	shell:"""
-	csvtk concat -C $ {input.coverages} >  {output.coverages}
+	csvtk concat -C $ {input.coverages} > {output.coverages}
 
 	touch {output.status}
 	"""
