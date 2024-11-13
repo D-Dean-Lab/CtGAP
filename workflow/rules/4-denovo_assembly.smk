@@ -1,3 +1,56 @@
+rule index:
+	message: "Indexing references"
+	input:
+		refset24 = REFSET,
+	output:
+		status = OUTDIR /"status" / "denovo.index.status"
+	params:
+		prefix_ref24 =  REFSET.stem,
+		loc_ref24 = REFSET.parent,
+	threads: config["threads"]["bowtieindex"]
+	conda: "../envs/bowtie.yaml"
+	shell:"""
+	bowtie2-build --threads {threads} {input.refset24} {params.loc_ref24}/{params.prefix_ref24} &> /dev/null
+
+	touch {output.status}
+	"""
+
+rule bowtie_ref24:
+	message: "Align against reference set"
+	input:
+		r1 = rules.scrub.output.r1,
+		r2 = rules.scrub.output.r2,
+		status = rules.index.output.status,
+	output:
+		bam = OUTDIR / "{sample}" / "denovo" / "bowtie_ref24" / "{sample}.ref24.bam",
+		coverage = OUTDIR / "{sample}" / "denovo" / "bowtie_ref24" / "{sample}.coverage.ref24.tsv",
+		status = OUTDIR / "status" / "denovo.bowtie2.ref24.{sample}.txt",
+	params:
+		prefix = rules.index.params.prefix_ref24,
+		loc = rules.index.params.loc_ref24,
+		sample_name = lambda w: w.sample,
+		tmp = lambda w: OUTDIR / f"{w.sample}" / "denovo" / "bowtie_ref24" / f"{w.sample}.tmp.cov.tsv",
+	threads: config["threads"]["bowtie"]
+	log: OUTDIR / "{sample}" / "log" / "bowtie2.ref24.{sample}.log"
+	conda: "../envs/bowtie.yaml"
+	shell:"""
+	bowtie2 -x \
+	{params.loc}/{params.prefix} \
+	-1 {input.r1} \
+	-2 {input.r2} \
+	--threads {threads} | \
+	samtools view -bSh - | \
+	samtools sort -@{threads} \
+	-o {output.bam} > {log} 2>&1
+
+	samtools index {output.bam}
+	samtools coverage {output.bam} > {params.tmp}
+
+	csvtk mutate2 -t -C $ {params.tmp} -n "sample_name" --at 1 -e " '{params.sample_name}' " > {output.coverage}
+
+	touch {output.status}
+	"""
+
 rule shovill:
 	message: "Assembling Sample {wildcards.sample}"
 	input:
@@ -173,6 +226,20 @@ rule mlst:
 	claMLST search \
 	{params.dbplasmid} \
 	{input} > {output.plasmid} 2>> {log}
+
+	touch {output.status}
+	"""
+
+rule ref_collate_coverage:
+	input:
+		coverages = expand(OUTDIR / "{sample}" / "denovo" / "bowtie_ref24" / "{sample}.coverage.ref24.tsv", sample = SAMPLES),
+	output:
+		coverages = OUTDIR / "denovo.coverage.tsv",
+		status = OUTDIR / "status" / "denovo.collate.coverage.txt",
+	threads: 1
+	conda: "../envs/misc.yaml"
+	shell:"""
+	csvtk concat -C $ {input.coverages} > {output.coverages}
 
 	touch {output.status}
 	"""
