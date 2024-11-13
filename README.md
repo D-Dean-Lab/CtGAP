@@ -32,8 +32,8 @@ cp $KRAKEN2_DIR/kraken2{,-build,-inspect} $HOME/bin
 - (Replace `$KRAKEN2_DIR` above with the directory where you want to install Kraken 2's programs/scripts.)
 - Ensure the kraken2 directory is on your path: `export PATH=$PATH:/path/to/kraken2_dir`
 
-6. Download the human genome, rename to `resources/grch38.fasta`
-	- [From NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
+6. Download a host genome, and ensure it gets placed into the `resources/` folder
+	- We recommend this human  genome[from NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
 
 7. Download one of the kraken dbs with archaea, eukaryotic, and bacterial genomes, rename to `resources/standardDB`:
 	- https://benlangmead.github.io/aws-indexes/k2
@@ -54,7 +54,8 @@ downloaded packages and your kraken2 directory are on your path.
 - `indir` is the path to your input folder
 - `outdir` is the path to your desired output folder. 
 - `mode` will tell the pipeline what type of assembly to perform 
-- `reference` will be the reference sequence your samples will be compared to. You need to have one even if doing denovo assembly
+- `reference` will be the reference sequence your samples will be compared to. If you are running denovo assembly or don't want to use a reference, set this to "reference_24"
+- `hostReference` will be the genome of the host organism you downloaded above in step 6. Add its full filename after `resource/`
 4. In `ctgap/` folder run the pipeline:
 ```
 snakemake -j 8 --use-conda -k
@@ -111,7 +112,7 @@ snakemake -j 8 --use-conda -k
 | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | benchmark/                                                          | information about how long each rule took                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | log/                                                                | log outputs of each step, useful for debugging                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| scrub/                                                              | scrubby_temp/ kraken2 database and human genome sequences used by scrubby<br>_scrub_first_\*.fastq.gz first scrub, samples with reads classified as human (host), Archaea, Eukaryota, Holozoa, and Nucletmycea removed<br>_trim_scrub_\*.fastq.gz second scrub, extracted Chlamydiales reads from first scrub results<br>ct_extract.json scrub statistics after removing Archaea, Eukaryota, Holozoa, and Nucletmycea reads<br>_remove_host.json scrub statistics after removing human reads  |
+| scrub/                                                              | scrubby_temp/ kraken2 database and host genome sequences used by scrubby<br>_scrub_first_\*.fastq.gz first scrub, samples with reads classified as host, Archaea, Eukaryota, Holozoa, and Nucletmycea removed<br>_trim_scrub_\*.fastq.gz second scrub, extracted Chlamydiales reads from first scrub results<br>ct_extract.json scrub statistics after removing Archaea, Eukaryota, Holozoa, and Nucletmycea reads<br>_remove_host.json scrub statistics after removing host reads  |
 | trim/                                                               | .fastq.gz trimmed samples<br>.html fastp trim statistics (number of reads and bases before and after trimming, sequence content, etc)<br>.json json version of html                                                                                                                                                                                                                                                                                                                           |
 | **With denovo mode enabled, denovo/**                               |
 | denovo_{sample}.final.fasta                                         | final denovo assembled sequence                                                                                                                                                                                                                                                                                                                                                                                                                                                               |

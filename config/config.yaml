@@ -6,7 +6,7 @@ reference: reference_24 # [plurality, reference_24, full_reference_filename]
 organism: ct # [ct]
 resourcesPath: resources/
 
-homoReference: resources/grch38.fasta.gzq
+hostReference: resources/grch38.fasta # [enter the full filename of your host genome]
 krakenDB: resources/standardDB
 ompaBlastDB: resources/references/ct/ompaBlastDB/ompa20
 mlstDB: resources/references/ct/pubmlst/

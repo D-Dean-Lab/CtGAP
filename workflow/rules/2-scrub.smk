@@ -13,7 +13,7 @@ rule scrub:
 	params:
 		db = KRAKENDB,
 		dbname = KRAKENDB.stem,
-		human = HUMANREF,
+		host = HOSTREF,
 		minlen = 50,
 		kraken_taxa_extract = 51291, #Chlamydiales
 		workdir = directory(OUTDIR / "{sample}" / "scrub" / "scrubby_temp"),
@@ -28,7 +28,7 @@ rule scrub:
 	--kraken-db {params.db} \
 	--kraken-taxa "Archaea Eukaryota Holozoa Nucletmycea" \
 	--min-len {params.minlen} \
-	--minimap2-index {params.human} \
+	--minimap2-index {params.host} \
 	--kraken-threads {threads} \
 	--keep \
 	--json {output.json_host} \
