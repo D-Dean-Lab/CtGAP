@@ -87,9 +87,9 @@ include: "rules/dnadiff.smk"
 
 # modes module
 if config["mode"] == "denovo":
-	include: "rules/4-assemble.smk"
+	include: "rules/4-denovo_assembly.smk"
 elif config["mode"] == "reference-denovo":
-	include: "rules/5-align.smk"
+	include: "rules/5-reference_assembly.smk"
 elif config["mode"] == "both":
-	include: "rules/4-assemble.smk"
-	include: "rules/5-align.smk"
+	include: "rules/4-denovo_assembly.smk"
+	include: "rules/5-reference_assembly.smk"

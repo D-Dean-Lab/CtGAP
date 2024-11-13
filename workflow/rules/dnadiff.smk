@@ -1,5 +1,5 @@
-include: "/home/oolago2/assembly_pipeline/fullTest_Dec23/CtGAP_test/ctgap/workflow/rules/5-align.smk"
-include: "/home/oolago2/assembly_pipeline/fullTest_Dec23/CtGAP_test/ctgap/workflow/rules/4-assemble.smk"
+include: "rules/5-reference_assembly.smk"
+include: "rules/4-denovo_assembly.smk"
 
 rule dna_diff:
 	message: "dnadiff comparison between denovo and reference denovo assemblies"
