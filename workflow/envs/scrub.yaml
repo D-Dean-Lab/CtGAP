@@ -1,6 +1,9 @@
 name: ctgap_scrub
 channels:
+  - conda-forge
   - bioconda
+  - esteinig
 dependencies:
   - kraken2
   - minimap2
+  - scrubby
