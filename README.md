@@ -5,7 +5,7 @@
 1. `git clone` this repo:
 
 ```
-git clone https://github.com/ammaraziz/ctgap
+git clone https://github.com/D-Dean-Lab/CtGAP
 ```
 
 2. Install `miniconda` or preferrably `mamba`
