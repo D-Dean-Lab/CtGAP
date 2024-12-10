@@ -1,4 +1,4 @@
-rule index:
+rule denovo_index:
 	message: "Indexing references"
 	input:
 		refset24 = REFSET,
@@ -15,7 +15,7 @@ rule index:
 	touch {output.status}
 	"""
 
-rule bowtie_ref24:
+rule denovo_bowtie_ref24:
 	message: "Align against reference set"
 	input:
 		r1 = rules.scrub.output.r1,
