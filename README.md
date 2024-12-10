@@ -17,9 +17,16 @@ git clone https://github.com/D-Dean-Lab/CtGAP
 mamba install -c bioconda snakemake 
 ```
 
-4. Manually install rust/scrubby. Use v0.3.0 (updated 07/01/2024) or later.
+4a. Install rust and cmake if you don't already have them
 ```
-git clone https://github.com/esteinig/scrubby
+mamba install -c conda-forge rust
+mamba install -c conda-forge cmake
+```
+- Ensure cargo is on your path: `export PATH=$PATH:/path/to/.cargo/bin`
+
+4b. Manually install scrubby. Use v0.3.0 (updated 07/01/2024) from the "empty" branch.
+```
+git clone https://github.com/esteinig/scrubby --branch empty
 cd scrubby && cargo build --release
 ./target/release/scrubby --help
 ```
