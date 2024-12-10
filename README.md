@@ -17,30 +17,24 @@ git clone https://github.com/D-Dean-Lab/CtGAP
 mamba install -c bioconda snakemake 
 ```
 
-4a. Install rust and cmake if you don't already have them
+4. Install rust and cmake if you don't already have them
 ```
 mamba install -c conda-forge rust
 mamba install -c conda-forge cmake
 ```
 - Ensure cargo is on your path: `export PATH=$PATH:/path/to/.cargo/bin`
 
-4b. Manually install scrubby. Use v0.3.0 (updated 07/01/2024) from the "empty" branch.
+5. Manually install scrubby. Use v0.3.0 (updated 07/01/2024) from the "empty" branch.
 ```
 git clone https://github.com/esteinig/scrubby --branch empty
 cd scrubby && cargo build --release
 ./target/release/scrubby --help
 ```
 - Ensure scrubby is on your path: `export PATH=$PATH:/path/to/scrubby/target/release`
-5. Install `kraken2`:
-```
-./install_kraken2.sh $KRAKEN2_DIR
-cp $KRAKEN2_DIR/kraken2{,-build,-inspect} $HOME/bin
-```
-- (Replace `$KRAKEN2_DIR` above with the directory where you want to install Kraken 2's programs/scripts.)
-- Ensure the kraken2 directory is on your path: `export PATH=$PATH:/path/to/kraken2_dir`
 
 6. Download a host genome, and ensure it gets placed into the `resources/` folder
 	- We recommend this human  genome[from NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
+	- Ensure the kraken2 working directory is on your path: `export PATH=$PATH:/path/to/kraken2_dir`
 
 7. Download one of the kraken dbs with archaea, eukaryotic, and bacterial genomes, rename to `resources/standardDB`:
 	- https://benlangmead.github.io/aws-indexes/k2
