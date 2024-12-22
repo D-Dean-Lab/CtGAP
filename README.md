@@ -33,7 +33,7 @@ cd scrubby && cargo build --release
 - Ensure scrubby is on your path: `export PATH=$PATH:/path/to/scrubby/target/release`
 
 6. Download a host genome, and ensure it gets placed into the `resources/` folder
-	- We recommend this human  genome[from NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
+	- We recommend this human  genome [from NCBI](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/)
 	- Ensure the kraken2 working directory is on your path: `export PATH=$PATH:/path/to/kraken2_dir`
 
 7. Download one of the kraken dbs with archaea, eukaryotic, and bacterial genomes, rename to `resources/standardDB`:
@@ -68,34 +68,36 @@ snakemake -j 8 --use-conda -k
 
 ### Dependencies
 
-- Snakemake
-- Spades
-- Shovill
-- Bowtie2
-- Samtools=1.19
-- Bcftools
-- Bedtools
-- Mummer
-- fastp
-- scrubby
-- kraken2
-- minimap2
-- multiqc
-- quast
-- ragtag
-- gap2seq
-- blast+
-- pymlst
-- augur
-- ska2
+- [Snakemake](https://github.com/snakemake/snakemake)
+- [Spades]](https://github.com/ablab/spades)
+- [Shovill](https://github.com/tseemann/shovill)
+- [Bowtie2](https://github.com/BenLangmead/bowtie2)
+- [Samtools=1.19](https://github.com/samtools/samtools)
+- [Bcftools](https://github.com/samtools/bcftools)
+- [Bedtools](https://github.com/arq5x/bedtools2)
+- [Mummer](https://github.com/mummer4/mummer)
+- [fastp](https://github.com/OpenGene/fastp)
+- [scrubby](https://github.com/nornagon/scrubby)
+- [kraken2](https://github.com/DerrickWood/kraken2)
+- [minimap2](https://github.com/lh3/minimap2)
+- [multiqc](https://github.com/MultiQC/MultiQC)
+- [quast](https://github.com/ablab/quast)
+- [ragtag](https://github.com/malonge/RagTag)
+- [gap2seq](https://github.com/rikuu/Gap2Seq/)
+- [blast+](https://github.com/ncbi/blast_plus_docs)
+- [pymlst](https://github.com/bvalot/pyMLST)
+- [augur](https://github.com/neurorestore/Augur)
+- [ska2](https://github.com/bacpop/ska.rust)
 
 ### Output
 
 | File Name                           | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | status/                             | empty .txt files produced at the end of each rule, used by snakemake to determine which rules need to be run and what order to run them in                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| bowtie_ref24/                                                       | {sample}.coverage.ref24.tsv coverage statistics of this sample and reference sequences (part of ref-denovo.coverage.tsv)<br>{sample}.ref24.bam alignment of cleaned reads to all reference sequences<br>{sample}.ref24.bam.bai indexes for {sample}.ref24.bam<br>{sample}.tmp.cov.tsv {sample}.coverage.ref24.tsv without sample_name column                                                                                                                                                  |
 | **For Denovo Assembly**             |
 | denovo.blast.tsv                    | results of blast nucleotide search on denovo assembled sequences in ompA database to perform ompA genotyping                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| denovo.coverage.tsv             | coverage statistics of all denovo assembled sequences compared to all reference sequences                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | denovo.mlst.ct.results.tsv          | genotyping of all denovo assembled sequences in chlamydiales order of PubMLST database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | denovo.mlst.generic.results.tsv     | genotyping of all denovo assembled sequences in C. trachomatis species of PubMLST database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | denovo.mlst.plasmid.results.tsv     | genotyping of all denovo assembled sequences in PubMLST's plasmid database                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -126,8 +128,7 @@ snakemake -j 8 --use-conda -k
 | **With reference assembly mode enabled, ref-denovo/**               |
 | ref-denovo_{sample}.final.fasta                                     | final reference assembled sequence                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | blast/blast.ompa.tab                                                | tab separated blast nucleotide search for this particular sample (1 row of ref-denovo.blast.tsv)                                                                                                                                                                                                                                                                                                                                                                                              |
-| bowtie2/6276.bam                                                    | alignment of cleaned reads to reference sequence                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| bowtie_ref24/                                                       | {sample}.coverage.ref24.tsv coverage statistics of this sample and reference sequences (part of ref-denovo.coverage.tsv)<br>{sample}.ref24.bam alignment of cleaned reads to all reference sequences<br>{sample}.ref24.bam.bai indexes for {sample}.ref24.bam<br>{sample}.tmp.cov.tsv {sample}.coverage.ref24.tsv without sample_name column                                                                                                                                                  |
+| bowtie2/{sample}.bam                                                    | alignment of cleaned reads to reference sequence                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | gap2seq/filled.fasta                                                | filled in scaffold according to trimmed and scrubbed sequences                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | mlst/                                                               | {sample}.genome.chlamydiales.mlst.txt genotyping in PubMLST database of assembled sequence in chlamydiales order (1 row in ref-denovo.mlst.generic.results.tsv)<br>{sample}.genome.ctrachomatis.mlst.txt genotyping in PubMLST database of assembled sequence in C. trachomatis species (1 row in ref-denovo.mlst.ct.results.tsv)<br>{sample}.genome.plasmid.mlst.txt genotyping in PubMLST database of assembled sequence in plasmid database (1 row in ref-denovo.mlst.plasmid.results.tsv) |
 | quast_report/                                                       | See [Quast Github page](https://github.com/ablab/quast?tab=readme-ov-file#output)                                                                                                                                                                                                                                                                                                                                                                                                             |
