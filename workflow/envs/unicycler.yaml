@@ -8,5 +8,5 @@ dependencies:
   - bowtie2  
   - samtools  
   - pilon  
-  - java-jdk  # Required by Pilon
+  - java-jdk  
   - biopython
