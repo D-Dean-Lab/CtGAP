@@ -1,6 +1,6 @@
 # CtGAP 2.0
 
-**Chlamydia trachomatis Genome Assembly Pipeline**
+***Chlamydia trachomatis* Genome Assembly Pipeline**
 
 CtGAP assembles *C. trachomatis* genomes from Illumina paired-end reads, performs strain typing, OmpA genotyping,MLST, detects plasmids (and types them), and builds phylogenetic trees.
 
@@ -64,7 +64,7 @@ Copy paired-end FASTQ files to `input/`:
 ctgap run
 ```
 
-### 3. Get results
+### 3. Get results (truncated list; you get way more)
 
 | File | Description |
 |------|-------------|
@@ -81,7 +81,7 @@ ctgap run
 ```bash
 ctgap run                        # Auto (default)
 ctgap run --denovo               # De novo only
-ctgap run --ref-guided [REF]    # Reference-guided with choice reference
+ctgap run --ref-guided [REF]     # Reference-guided with choice reference
 ```
 
 | Mode | When to use |
@@ -108,33 +108,9 @@ Available references: any genome in `resources/references/ct/individual/`, or `p
 
 Edit `config/config.yaml` to adjust thread counts for your system:
 
-```yaml
-threads:
-  fastp: 8
-  shovill: 8
-  bowtie: 8
-  ska: 8
-  tree: 16
-```
-
-### For limited resources (< 16 cores or < 40 GB RAM)
-
-```yaml
-threads:
-  fastp: 8
-  shovill: 16
-  spades: 16
-  bowtie: 8
-  ska: 8
-  tree: 8
-
-shovill:
-  downsample: 200  # Default is 200
-```
-
 ---
 
-## Output
+## Output (truncated list; you get way more)
 
 ```
 output/
