@@ -40,3 +40,4 @@ rule fastp:
 
 	touch {output.status}
 	"""
+

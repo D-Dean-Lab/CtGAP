@@ -1,0 +1,11 @@
+name: hocort-env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.8,<3.10
+  - hocort
+  - bowtie2
+  - samtools
+  - pigz

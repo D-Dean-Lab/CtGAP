@@ -1,0 +1,13 @@
+name: kraken-env
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - kraken2=2.1.3
+  - krakentools=1.2
+  - biopython=1.78
+  - pigz
+  - parallel
+  - coreutils

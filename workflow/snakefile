@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 from rich import print as pprint
 
+import os
+
 configfile: "config/config.yaml"
 include: "rules/common.smk"
 
@@ -23,73 +25,149 @@ INDIVIDUAL_DICT = {n.stem:str(n.resolve()) for n in INDIVIDUAL}
 # references
 HOSTREF = Path(config["hostReference"])
 
-# databaes
+# databases
 KRAKENDB = Path(config["krakenDB"])
 OMPABLASTDB = Path(config["ompaBlastDB"])
 MLSTDB = Path(config["mlstDB"])
 
 # reference configuration
 if config["reference"] == "plurality":
-	REF = RESOURCES / "references" / ORG / "plurality.fasta"
+        REF = RESOURCES / "references" / ORG / "plurality.fasta"
 elif config["reference"] == "reference_set":
-	REF = RESOURCES / "references" / ORG / "refset.fasta"
+        REF = RESOURCES / "references" / ORG / "refset.fasta"
 else:
-	REF = RESOURCES / "references" / ORG / f"{config['reference']}"
+        REF = RESOURCES / "references" / ORG / f"{config['reference']}"
 
 # get samples
-SAMPLE_NAME, PAIR = glob_wildcards(INDIR / "{sample_name}_{pair}.fastq.gz")
-SAMPLES = set(SAMPLE_NAME)
+ENVONLY = (os.environ.get("CTGAP_ENVONLY") == "1") or (str(config.get("envonly", "0")) == "1")
 
-if not SAMPLES:
-	pprint("[yellow] No samples were detected. Check the input variable in the config.yml file and ensure it reflects the complete path to your samples.[/yellow]")
-	sys.exit()
-
-#input files for rule all
-#denovo only
-denovo_input_list = [
-    expand(OUTDIR / "status" / "denovo.ompA_genovar.collate.blast.txt", sample=SAMPLES),
-    expand(OUTDIR / "status" / "denovo.mlst.collate.txt", sample=SAMPLES),
-    expand(OUTDIR / "tree" / "ska_alignment.fasta", sample=SAMPLES),
-    expand(OUTDIR / f"{ORG}.tree", sample=SAMPLES),
-    expand(OUTDIR / "status" / "denovo.assembly_statistics.{sample}.txt", sample=SAMPLES)
-]
-#ref-denovo_only
-ref_denovo_input_list = [
-    expand(OUTDIR / "status" / "ref-denovo.collate.coverage.txt", sample=SAMPLES),
-    expand(OUTDIR / "status" / "ref-denovo.ompA_genovar.collate.blast.txt", sample=SAMPLES),
-    expand(OUTDIR / "status" / "ref-denovo.mlst.collate.txt", sample=SAMPLES),
-    expand(OUTDIR / "status" / "ref-denovo.assembly_statistics.{sample}.txt", sample=SAMPLES)
-]
-#only when both run
-only_both_list = [
-    expand(OUTDIR / "status" / "dnadiff.{sample}.txt", sample=SAMPLES)
-]
-
-if config["mode"] == "denovo":
-	input_list = denovo_input_list
-elif config["mode"] == "reference-denovo":
-	input_list = ref_denovo_input_list
-elif config["mode"] == "both":
-	input_list = denovo_input_list + ref_denovo_input_list + only_both_list
+if ENVONLY:
+    # Dummy sample lets Snakemake build the DAG and create envs without real inputs
+    SAMPLES = {"DUMMY"}
 else:
-	print(config["mode"], " is an invalid mode. Modes are limited to 'denovo', 'reference-denovo', or 'both'.")
+    SAMPLE_NAME, PAIR = glob_wildcards(INDIR / "{sample_name}_R{pair}.fastq.gz")
+    SAMPLES = set(SAMPLE_NAME)
+    if not SAMPLES:
+        print("[yellow] No samples were detected. Check the 'indir' in config.yaml and ensure it matches your FASTQ pattern.")
+        sys.exit(1)
+
+# CT typing outputs (conditional on config)
+if config.get("ct_typing", {}).get("enabled", False):
+    ct_typing_input_list = [
+        # Per-sample status files
+        expand(OUTDIR / "status" / "ct_typing.{sample}.txt", sample=SAMPLES),
+        # Combined summary report
+        OUTDIR / "reports" / "ct_typing_all_samples.csv",
+        OUTDIR / "status" / "ct_typing.summary.txt",
+    ]
+else:
+    ct_typing_input_list = []
+
+# Choose inputs based on mode
+if ENVONLY:
+    # During setup, only request minimal outputs to build conda envs
+    input_list = [
+        OUTDIR / "status" / "setup_complete.txt"
+    ]
+    
+    # Simple dummy rule for environment setup
+    rule setup_envs:
+        output:
+            OUTDIR / "status" / "setup_complete.txt"
+        shell:
+            """
+            mkdir -p {OUTDIR}/status
+            echo "Conda environments created successfully" > {output}
+            echo "Run 'ctgap run' to start analysis" >> {output}
+            """
+
+elif config["mode"] == "denovo":
+    input_list = [
+        # Assembly selection metadata
+        expand(OUTDIR / "reports" / "assembly_selection" / "{sample}.method.txt", sample=SAMPLES),
+        OUTDIR / "reports" / "assembly_methods_summary.txt",
+        # Typing outputs (run on best assembly)
+        expand(OUTDIR / "status" / "best.blastn.{sample}.txt", sample=SAMPLES),
+        OUTDIR / "status" / "best.ompA_genovar.collate.blast.txt",
+        OUTDIR / "status" / "best.secondary.collate.blast.txt",
+        expand(OUTDIR / "status" / "best.mlst.{sample}.txt", sample=SAMPLES),
+        OUTDIR / "status" / "best.mlst.collate.txt",
+        OUTDIR / f"{ORG}.tree",
+        # Coverage
+        OUTDIR / "denovo.coverage.tsv",
+        # Plasmid outputs (Unicycler-based)
+        expand(OUTDIR / "{sample}" / "denovo" / "unicycler" / "plasmids_only.fasta", sample=SAMPLES),
+        expand(OUTDIR / "{sample}" / "reports" / "{sample}_plasmid_report.pdf", sample=SAMPLES),
+        OUTDIR / "status" / "denovo.plasmid.collate.blast.txt",
+        OUTDIR / "status" / "denovo.mlst.plasmid.collate.txt",
+        OUTDIR / "reports" / "comprehensive_plasmid_analysis.txt",
+        # Summary reports
+        OUTDIR / "reports" / "scaffold_summary.txt",
+    ] + ct_typing_input_list
+
+elif config["mode"] == "reference-denovo":
+    input_list = [
+        # Assembly selection metadata
+        expand(OUTDIR / "reports" / "assembly_selection" / "{sample}.method.txt", sample=SAMPLES),
+        OUTDIR / "reports" / "assembly_methods_summary.txt",
+        # Typing outputs (run on best assembly)
+        expand(OUTDIR / "status" / "best.blastn.{sample}.txt", sample=SAMPLES),
+        OUTDIR / "status" / "best.ompA_genovar.collate.blast.txt",
+        OUTDIR / "status" / "best.secondary.collate.blast.txt",
+        expand(OUTDIR / "status" / "best.mlst.{sample}.txt", sample=SAMPLES),
+        OUTDIR / "status" / "best.mlst.collate.txt",
+        OUTDIR / f"{ORG}.tree",
+        # Ref-specific
+        OUTDIR / "status" / "ref-denovo.collate.coverage.txt",
+        OUTDIR / "reports" / "ref-denovo.alignment_summary.txt",
+        OUTDIR / "reports" / "ref_scaffold_summary.txt",
+    ] + ct_typing_input_list
+
+elif config["mode"] == "auto":
+    input_list = [
+        # Assembly selection
+        expand(OUTDIR / "reports" / "assembly_selection" / "{sample}.txt", sample=SAMPLES),
+        OUTDIR / "reports" / "assembly_methods_summary.txt",
+        # Typing outputs (run ONCE on best assembly)
+        expand(OUTDIR / "status" / "best.blastn.{sample}.txt", sample=SAMPLES),
+        OUTDIR / "status" / "best.ompA_genovar.collate.blast.txt",
+        OUTDIR / "status" / "best.secondary.collate.blast.txt",
+        expand(OUTDIR / "status" / "best.mlst.{sample}.txt", sample=SAMPLES),
+        OUTDIR / "status" / "best.mlst.collate.txt",
+        OUTDIR / f"{ORG}.tree",
+        # Plasmid outputs (Unicycler-based)
+        expand(OUTDIR / "{sample}" / "denovo" / "unicycler" / "plasmids_only.fasta", sample=SAMPLES),
+        expand(OUTDIR / "{sample}" / "reports" / "{sample}_plasmid_report.pdf", sample=SAMPLES),
+        OUTDIR / "status" / "denovo.plasmid.collate.blast.txt",
+        OUTDIR / "status" / "denovo.mlst.plasmid.collate.txt",
+        OUTDIR / "reports" / "comprehensive_plasmid_analysis.txt",
+        # Summary reports
+        OUTDIR / "reports" / "scaffold_summary.txt",
+        OUTDIR / "reports" / "ref_scaffold_summary.txt",
+    ] + ct_typing_input_list
+
+else:
+    raise ValueError(f"{config['mode']} is an invalid mode. Choose: 'denovo', 'reference-denovo', 'auto'.")
 
 rule all:
-	input:
-		input_list
+    input:
+        input_list
 
-# common modules
+# Common modules
 include: "rules/1-trim.smk"
-include: "rules/2-scrub.smk"
+include: "rules/2-scrub_hocort.smk"
 include: "rules/3-qc.smk"
-include: "rules/dnadiff.smk"
 
+# Assembly modules - always include, mode controls which rules activate
+include: "rules/4-assemble.smk"     # Provides de novo assembly
+include: "rules/5-align.smk"        # Provides reference-guided assembly
+include: "rules/6-select-best.smk"  # Handles selection logic for all modes
+include: "rules/7-typing.smk"       # Typing (works on "best" assembly)
 
-# modes module
-if config["mode"] == "denovo":
-	include: "rules/4-denovo_assembly.smk"
-elif config["mode"] == "reference-denovo":
-	include: "rules/5-reference_assembly.smk"
-elif config["mode"] == "both":
-	include: "rules/4-denovo_assembly.smk"
-	include: "rules/5-reference_assembly.smk"
+# Detailed plasmid module (denovo/auto only)
+if config["mode"] in ["denovo", "auto"] and not ENVONLY:
+    include: "rules/plasmid.smk"
+
+# CT typing (optional, works with any assembly mode)
+if config.get("ct_typing", {}).get("enabled", False) and not ENVONLY:
+    include: "rules/6-ct_typing.smk"

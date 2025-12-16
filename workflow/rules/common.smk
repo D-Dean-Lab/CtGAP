@@ -4,7 +4,7 @@ Common.smk
 
 import sys
 import os
-from  pathlib import Path
+from pathlib import Path
 from collections import defaultdict
 
 import pandas as pd
@@ -29,7 +29,6 @@ def samplesFromCsv(csvFile):
             if len(l) == 4:
                 outDict[l[0]] = {}
                 if (
-                    #type(l[1]) is str
                     isinstance(l[1], str)
                     and os.path.isfile(l[2])
                     and os.path.isfile(l[3])
@@ -90,12 +89,43 @@ def parseSamples(csvfile):
 
     return sampleDict
 
-# get inputs
+
+# Get inputs
 def get_input_r1(wildcards):
     return dictReads[wildcards.sample]["R1"]
+
 
 def get_input_r2(wildcards):
     return dictReads[wildcards.sample]["R2"]
 
+
 def get_input_lr_fastqs(wildcards):
     return dictReads[wildcards.sample]["LR"]
+
+
+# Database creation rules
+rule make_plasmid_blastdb:
+    input:
+        fasta = "resources/references/ct/20_Ct_plasmids.fasta"
+    output:
+        nhr = "resources/references/ct/20_Ct_plasmids.nhr",
+        nin = "resources/references/ct/20_Ct_plasmids.nin",
+        nsq = "resources/references/ct/20_Ct_plasmids.nsq"
+    log: "logs/makeblastdb.plasmid.log"
+    conda: "../envs/misc.yaml"
+    shell: """
+    makeblastdb \
+      -in {input.fasta} \
+      -dbtype nucl \
+      -out resources/references/ct/20_Ct_plasmids \
+      > {log} 2>&1
+    """
+
+
+# Helper function for typing rules
+def get_best_assembly(wildcards):
+    """
+    Return the 'best' assembly path based on mode.
+    All modes now output to best/ directory via 6-select-best.smk
+    """
+    return OUTDIR / wildcards.sample / "best" / "assembly.fasta"

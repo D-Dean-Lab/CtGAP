@@ -1,15 +1,19 @@
-indir : /path/to/input
-outdir: /path/to/output
+indir: input/
+outdir: output/
 
-mode: both # [denovo, reference-denovo, both]
-reference: reference_24 # [plurality, reference_24, full_reference_filename]
+mode: auto # Options: denovo (de novo only) | reference-denovo (ref-guided only) | auto (both methods, selects best)
+reference: plurality # [plurality, reference_24, specific reference sequence]
 organism: ct # [ct]
 resourcesPath: resources/
 
 hostReference: resources/grch38.fasta # [enter the full filename of your host genome]
 krakenDB: resources/standardDB
-ompaBlastDB: resources/references/ct/ompaBlastDB/ompa20
+ompaBlastDB: resources/references/ct/ompaBlastDB/ompa21
+secondaryBlastDB: "resources/references/ct/secondaryBlastDB/secondary"
 mlstDB: resources/references/ct/pubmlst/
+hocort_opts: ""
+hocort_bowtie2_args: ""
+chlamydiales_taxid: 51291
 
 # shovill settings
 shovill:
@@ -24,19 +28,46 @@ use_conda: true
 
 # number of cpus used per tool/rule
 threads:
-  fastp: 40
-  scrubby: 48
-  shovill: 48
-  spades: 48
+  fastp: 32
+  shovill: 20
+  spades: 20
   blast: 12
-  ragtag: 40
+  ragtag: 16
   bowtieindex: 40
   bowtie: 40
   samtools: 36
   mlst: 1
-  gap2seq: 40
+  gap2seq: 8
   bedtools: 1
   ska: 48
   tree: 64
   quast: 32
   dnadiff: 8
+  hocort: 20
+  kraken: 8
+  unicycler: 20
+
+# ========== CT Typing Configuration ==========
+
+ct_typing:
+  enabled: true  # Set to false to disable CT typing
+  
+  mash:
+    k: 31
+    sketch_size: 50000
+  
+  fastani:
+    fragLen: 3000         # Lower for fragmented assemblies
+    minFraction: 0.3      # Minimum genome fraction threshold
+    threads: 8
+  
+  thresholds:
+    high_ani: 99.95       # ANI ≥ high_ani → "High confidence"
+    med_ani: 98.0         # med_ani ≤ ANI < high_ani → "Medium confidence"
+  
+  decision:
+    delta_ani: 0.001      # % difference needed vs runner-up to call unique best
+    min_ani_cov: 0.95     # Minimum frags_over/frags_total for "confident"
+    min_mash_margin: 5e-5 # Top vs 2nd best Mash distance margin
+    require_methods_agree: 2  # Need agreement of ≥2 methods if near-tie
+

@@ -1,6 +1,19 @@
+#name: ctgap_scrub
+#channels:
+#  - bioconda
+#dependencies:
+#  - kraken2
+#  - minimap2
+
+# workflow/envs/scrub.yaml
 name: ctgap_scrub
 channels:
+  - esteinig
   - bioconda
+  - conda-forge
 dependencies:
+  - scrubby
   - kraken2
   - minimap2
+  - samtools
+  - pigz

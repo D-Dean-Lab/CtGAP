@@ -1,3 +1,0 @@
-#sample,runtype,r1,r2
-#SAMPLE1,paired-end,PATH/TO/R1.fastq.gz,PATH/TO/R2.fastq.gz
-F3,paired-end,/Users/aaziz/Downloads/ctgap_input/F3_R1.fastq.gz,/Users/aaziz/Downloads/ctgap_input/F3_R2.fastq.gz

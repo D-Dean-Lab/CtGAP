@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve this script path through any symlinks
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  TARGET="$(readlink "$SOURCE")"
+  if [[ "$TARGET" = /* ]]; then
+    SOURCE="$TARGET"
+  else
+    SOURCE="$(cd "$(dirname "$SOURCE")" && pwd)/$TARGET"
+  fi
+done
+REPO_DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+
+# Parse CLI arguments for config overrides
+MODE=""
+REFERENCE=""
+MAKE_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --denovo)
+            MODE="denovo"
+            shift
+            ;;
+        --ref-guided)
+            MODE="reference-denovo"
+            # Check if next argument is a reference name (not another flag)
+            if [[ -n "${2:-}" && ! "$2" =~ ^-- ]]; then
+                REFERENCE="$2"
+                shift
+            fi
+            shift
+            ;;
+        --auto)
+            MODE="auto"
+            shift
+            ;;
+        --help|-h)
+            cat << 'EOF'
+CtGAP - Chlamydia trachomatis Genome Assembly Pipeline
+
+Usage: ctgap COMMAND [OPTIONS]
+
+Commands:
+  setup       Setup conda environments
+  run         Run the pipeline
+  clean       Clean output files
+  dag         Generate DAG visualization
+  rulegraph   Generate rule graph visualization
+  filegraph   Generate file graph visualization
+
+Options:
+  --denovo              Use de novo assembly only
+  --ref-guided [REF]    Use reference-guided assembly
+                        Optional: specify reference genome name or "plurality"
+  --auto                Use auto mode (run both, select best) [default]
+
+Examples:
+  ctgap run                         # Auto mode (recommended)
+  ctgap run --denovo                # De novo only
+  ctgap run --ref-guided E_bour     # Reference-guided with E_bour
+  ctgap run --ref-guided plurality  # Reference-guided with plurality consensus
+  ctgap setup                       # Setup environments
+  ctgap dag --auto                  # Generate DAG for auto mode
+
+EOF
+            exit 0
+            ;;
+        *)
+            # All other arguments go to make
+            MAKE_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Export for Makefile (only if set)
+[[ -n "$MODE" ]] && export CTGAP_MODE="$MODE"
+[[ -n "$REFERENCE" ]] && export CTGAP_REFERENCE="$REFERENCE"
+
+# Hand off to the Makefile inside the repo
+exec make -C "$REPO_DIR" "${MAKE_ARGS[@]}"

@@ -1,0 +1,12 @@
+name: ctgap_unicycler
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - unicycler
+  - spades  
+  - bowtie2  
+  - samtools  
+  - pilon  
+  - java-jdk  # Required by Pilon
+  - biopython

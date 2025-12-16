@@ -1,0 +1,9 @@
+name: polish
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - pilon=1.24
+  - bwa=0.7.17
+  - samtools=1.17
+  - openjdk=11

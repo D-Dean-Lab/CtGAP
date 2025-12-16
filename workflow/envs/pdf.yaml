@@ -1,0 +1,11 @@
+name: pdf
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.9
+  - reportlab
+  - pandas
+  - pypdf
+  - pdfplumber
+
