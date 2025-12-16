@@ -61,7 +61,7 @@ Copy paired-end FASTQ files to `input/`:
 ### 2. Run
 
 ```bash
-./ctgap run
+ctgap run
 ```
 
 ### 3. Get results
@@ -79,9 +79,9 @@ Copy paired-end FASTQ files to `input/`:
 ## Assembly Modes
 
 ```bash
-./ctgap run                        # Auto (default)
-./ctgap run --denovo               # De novo only
-./ctgap run --ref-guided [REF]    # Reference-guided with choice reference
+ctgap run                        # Auto (default)
+ctgap run --denovo               # De novo only
+ctgap run --ref-guided [REF]    # Reference-guided with choice reference
 ```
 
 | Mode | When to use |
@@ -174,7 +174,7 @@ ls input/
 Just re-run. It resumes automatically:
 
 ```bash
-./ctgap run
+ctgap run
 ```
 
 ### View logs
