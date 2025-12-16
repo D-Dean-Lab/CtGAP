@@ -198,5 +198,16 @@ conda install -n base -c conda-forge mamba
 mamba create -n snakemake -c conda-forge -c bioconda snakemake
 conda activate snakemake
 ```
-
 ---
+
+### Dependencies
+
+[fastp](https://github.com/OpenGene/fastp) . [HoCort](https://github.com/ignasrum/hocort) . [Bowtie2](https://github.com/BenLangmead/bowtie2) .
+[SAMtools](https://github.com/samtools/samtools) . [BCFtools](https://github.com/samtools/bcftools) . [Kraken2](https://github.com/DerrickWood/kraken2) .
+[KrakenTools](https://github.com/jenniferlu717/KrakenTools) . [Shovill](https://github.com/tseemann/shovill) . [SPAdes](https://github.com/ablab/spades) .
+[Unicycler](https://github.com/rrwick/Unicycler) . [RagTag](https://github.com/malonge/RagTag) . [Gap2Seq](https://github.com/rikuturkki/Gap2Seq) .
+[Pilon](https://github.com/broadinstitute/pilon) . [BWA](https://github.com/lh3/bwa) . [BLAST](https://blast.ncbi.nlm.nih.gov) .
+[pyMLST](https://github.com/bvalot/pyMLST) . [SeqKit](https://github.com/shenwei356/seqkit) . [BEDtools](https://github.com/arq5x/bedtools2) .
+[QUAST](https://github.com/ablab/quast) . [MUMmer](https://github.com/mummer4/mummer) . [SKA2](https://github.com/bacpop/ska.rust) .
+[Augur](https://github.com/nextstrain/augur) . [Mash](https://github.com/marbl/Mash) . [FastANI](https://github.com/ParBLiSS/FastANI) .
+[MultiQC](https://github.com/MultiQC/MultiQC) . [csvtk](https://github.com/shenwei356/csvtk) . [ReportLab](https://www.reportlab.com) .
