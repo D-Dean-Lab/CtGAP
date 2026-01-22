@@ -7,3 +7,5 @@ dependencies:
   - samtools=1.19
   - bcftools
   - csvtk
+  - minimap2
+  - seqtk

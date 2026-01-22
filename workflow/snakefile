@@ -63,6 +63,34 @@ if config.get("ct_typing", {}).get("enabled", False):
 else:
     ct_typing_input_list = []
 
+# Annotation outputs (conditional on config)
+# Uses checkpoint to dynamically determine which samples get annotated
+if config.get("annotation", {}).get("enabled", True):
+    annotation_input_list = [
+        OUTDIR / "status" / "annotation.complete.txt",
+    ]
+else:
+    annotation_input_list = []
+
+# Mixed strain detection outputs (conditional on config)
+if config.get("mixed_detection", {}).get("enabled", True):
+    mixed_detection_input_list = [
+        OUTDIR / "status" / "mixed_detection.complete.txt",
+    ]
+else:
+    mixed_detection_input_list = []
+
+# Assembly filtering outputs (conditional on config)
+if config.get("assembly_filter", {}).get("enabled", True):
+    assembly_filter_input_list = [
+        expand(OUTDIR / "status" / "filter_applied.{sample}.txt", sample=SAMPLES),
+        OUTDIR / "reports" / "assembly_filter_summary.tsv",
+    ]
+else:
+    assembly_filter_input_list = [
+        expand(OUTDIR / "status" / "filter_applied.{sample}.txt", sample=SAMPLES),  # dummy status
+    ]
+
 # Choose inputs based on mode
 if ENVONLY:
     # During setup, only request minimal outputs to build conda envs
@@ -95,15 +123,23 @@ elif config["mode"] == "denovo":
         OUTDIR / f"{ORG}.tree",
         # Coverage
         OUTDIR / "denovo.coverage.tsv",
-        # Plasmid outputs (Unicycler-based)
-        expand(OUTDIR / "{sample}" / "denovo" / "unicycler" / "plasmids_only.fasta", sample=SAMPLES),
+        # Alignment statistics
+        OUTDIR / "reports" / "denovo.alignment_summary.txt",
+        # Dedicated plasmid assembly (reference-guided + Unicycler)
+        expand(OUTDIR / "{sample}" / "plasmid" / "{sample}.plasmid.fasta", sample=SAMPLES),
         expand(OUTDIR / "{sample}" / "reports" / "{sample}_plasmid_report.pdf", sample=SAMPLES),
-        OUTDIR / "status" / "denovo.plasmid.collate.blast.txt",
-        OUTDIR / "status" / "denovo.mlst.plasmid.collate.txt",
-        OUTDIR / "reports" / "comprehensive_plasmid_analysis.txt",
+        OUTDIR / "status" / "plasmid.collate.txt",
+        OUTDIR / "reports" / "plasmid_summary.tsv",
+        OUTDIR / "reports" / "plasmid_analysis_report.txt",
         # Summary reports
         OUTDIR / "reports" / "scaffold_summary.txt",
-    ] + ct_typing_input_list
+        # Comprehensive reports
+        expand(OUTDIR / "{sample}" / "reports" / "{sample}_ctgap_report.pdf", sample=SAMPLES),
+        OUTDIR / "reports" / "ctgap_all_samples_summary.csv",
+        OUTDIR / "reports" / "ctgap_batch_summary.txt",
+        # Final reorganization
+        OUTDIR / "status" / "reorganize_complete.txt",
+    ] + ct_typing_input_list + annotation_input_list + mixed_detection_input_list + assembly_filter_input_list
 
 elif config["mode"] == "reference-denovo":
     input_list = [
@@ -117,11 +153,27 @@ elif config["mode"] == "reference-denovo":
         expand(OUTDIR / "status" / "best.mlst.{sample}.txt", sample=SAMPLES),
         OUTDIR / "status" / "best.mlst.collate.txt",
         OUTDIR / f"{ORG}.tree",
-        # Ref-specific
-        OUTDIR / "status" / "ref-denovo.collate.coverage.txt",
+        # Coverage
+        OUTDIR / "ref-denovo.coverage.tsv",
+        # Alignment statistics
         OUTDIR / "reports" / "ref-denovo.alignment_summary.txt",
+        # QUAST vs reference
+        expand(OUTDIR / "status" / "ref-denovo.assembly_statistics_vs_scaffold.{sample}.txt", sample=SAMPLES),
+        # Dedicated plasmid assembly (reference-guided + Unicycler)
+        expand(OUTDIR / "{sample}" / "plasmid" / "{sample}.plasmid.fasta", sample=SAMPLES),
+        expand(OUTDIR / "{sample}" / "reports" / "{sample}_plasmid_report.pdf", sample=SAMPLES),
+        OUTDIR / "status" / "plasmid.collate.txt",
+        OUTDIR / "reports" / "plasmid_summary.tsv",
+        OUTDIR / "reports" / "plasmid_analysis_report.txt",
+        # Summary reports
         OUTDIR / "reports" / "ref_scaffold_summary.txt",
-    ] + ct_typing_input_list
+        # Comprehensive reports
+        expand(OUTDIR / "{sample}" / "reports" / "{sample}_ctgap_report.pdf", sample=SAMPLES),
+        OUTDIR / "reports" / "ctgap_all_samples_summary.csv",
+        OUTDIR / "reports" / "ctgap_batch_summary.txt",
+        # Final reorganization
+        OUTDIR / "status" / "reorganize_complete.txt",
+    ] + ct_typing_input_list + annotation_input_list + mixed_detection_input_list + assembly_filter_input_list
 
 elif config["mode"] == "auto":
     input_list = [
@@ -135,16 +187,30 @@ elif config["mode"] == "auto":
         expand(OUTDIR / "status" / "best.mlst.{sample}.txt", sample=SAMPLES),
         OUTDIR / "status" / "best.mlst.collate.txt",
         OUTDIR / f"{ORG}.tree",
-        # Plasmid outputs (Unicycler-based)
-        expand(OUTDIR / "{sample}" / "denovo" / "unicycler" / "plasmids_only.fasta", sample=SAMPLES),
+        # Coverage (both modes)
+        OUTDIR / "denovo.coverage.tsv",
+        OUTDIR / "ref-denovo.coverage.tsv",
+        # Alignment statistics (both modes)
+        OUTDIR / "reports" / "denovo.alignment_summary.txt",
+        OUTDIR / "reports" / "ref-denovo.alignment_summary.txt",
+        # QUAST vs reference (ref-denovo assemblies)
+        expand(OUTDIR / "status" / "ref-denovo.assembly_statistics_vs_scaffold.{sample}.txt", sample=SAMPLES),
+        # Dedicated plasmid assembly (reference-guided + Unicycler)
+        expand(OUTDIR / "{sample}" / "plasmid" / "{sample}.plasmid.fasta", sample=SAMPLES),
         expand(OUTDIR / "{sample}" / "reports" / "{sample}_plasmid_report.pdf", sample=SAMPLES),
-        OUTDIR / "status" / "denovo.plasmid.collate.blast.txt",
-        OUTDIR / "status" / "denovo.mlst.plasmid.collate.txt",
-        OUTDIR / "reports" / "comprehensive_plasmid_analysis.txt",
+        OUTDIR / "status" / "plasmid.collate.txt",
+        OUTDIR / "reports" / "plasmid_summary.tsv",
+        OUTDIR / "reports" / "plasmid_analysis_report.txt",
         # Summary reports
         OUTDIR / "reports" / "scaffold_summary.txt",
         OUTDIR / "reports" / "ref_scaffold_summary.txt",
-    ] + ct_typing_input_list
+        # Comprehensive reports
+        expand(OUTDIR / "{sample}" / "reports" / "{sample}_ctgap_report.pdf", sample=SAMPLES),
+        OUTDIR / "reports" / "ctgap_all_samples_summary.csv",
+        OUTDIR / "reports" / "ctgap_batch_summary.txt",
+        # Final reorganization
+        OUTDIR / "status" / "reorganize_complete.txt",
+    ] + ct_typing_input_list + annotation_input_list + mixed_detection_input_list + assembly_filter_input_list
 
 else:
     raise ValueError(f"{config['mode']} is an invalid mode. Choose: 'denovo', 'reference-denovo', 'auto'.")
@@ -162,12 +228,30 @@ include: "rules/3-qc.smk"
 include: "rules/4-assemble.smk"     # Provides de novo assembly
 include: "rules/5-align.smk"        # Provides reference-guided assembly
 include: "rules/6-select-best.smk"  # Handles selection logic for all modes
+include: "rules/6b-filter-contigs.smk"  # Post-assembly filtering (removes non-Ct contigs)
 include: "rules/7-typing.smk"       # Typing (works on "best" assembly)
 
-# Detailed plasmid module (denovo/auto only)
-if config["mode"] in ["denovo", "auto"] and not ENVONLY:
-    include: "rules/plasmid.smk"
+# Dedicated plasmid module - reference-guided assembly for CT plasmid
+# Uses read mapping to reference plasmid + Unicycler for clean plasmid assembly
+if not ENVONLY:
+    include: "rules/plasmid_dedicated.smk"
 
 # CT typing (optional, works with any assembly mode)
 if config.get("ct_typing", {}).get("enabled", False) and not ENVONLY:
     include: "rules/6-ct_typing.smk"
+
+# Genome annotation (optional, checkpoint-based for samples with sufficient coverage)
+if config.get("annotation", {}).get("enabled", True) and not ENVONLY:
+    include: "rules/10-annotate.smk"
+
+# Mixed strain detection (variant heterozygosity analysis)
+if config.get("mixed_detection", {}).get("enabled", True) and not ENVONLY:
+    include: "rules/11-mixed-detection.smk"
+
+# Comprehensive reporting (combines chromosome and plasmid analysis)
+if not ENVONLY:
+    include: "rules/8-reports.smk"
+
+# Final output reorganization (creates clean user-facing structure)
+if not ENVONLY:
+    include: "rules/9-reorganize.smk"

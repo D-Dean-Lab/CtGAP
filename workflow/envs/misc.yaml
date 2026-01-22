@@ -1,5 +1,6 @@
 name: ctgap_misc
 channels:
+  - conda-forge
   - bioconda
 dependencies:
   - multiqc
