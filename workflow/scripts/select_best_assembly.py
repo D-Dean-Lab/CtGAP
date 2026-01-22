@@ -88,18 +88,30 @@ def main():
     # Calculate scores
     denovo_score = calculate_assembly_score(denovo_stats)
     refguided_score = calculate_assembly_score(refguided_stats)
-    
+
+    # Minimum margin required for ref-denovo to win (de novo is less biased, so prefer it in ties)
+    MIN_MARGIN_FOR_REFGUIDED = 2.0  # ref-denovo must beat denovo by at least 2 points
+
     # Select best assembly
-    if denovo_score >= refguided_score:
-        selected = "denovo"
-        selected_asm = denovo_asm
-        winner_score = denovo_score
-        loser_score = refguided_score
-    else:
+    # De novo wins unless ref-denovo is clearly better (by >= MIN_MARGIN points)
+    # This avoids bias from reference-guided scaffolding in ambiguous cases
+    if refguided_score >= denovo_score + MIN_MARGIN_FOR_REFGUIDED:
         selected = "reference-denovo"
         selected_asm = refguided_asm
         winner_score = refguided_score
         loser_score = denovo_score
+        selection_reason = f"ref-denovo wins by {refguided_score - denovo_score:.2f} points (>= {MIN_MARGIN_FOR_REFGUIDED} margin)"
+    else:
+        selected = "denovo"
+        selected_asm = denovo_asm
+        winner_score = denovo_score
+        loser_score = refguided_score
+        if denovo_score > refguided_score:
+            selection_reason = f"denovo wins by {denovo_score - refguided_score:.2f} points"
+        elif denovo_score == refguided_score:
+            selection_reason = f"tie ({denovo_score:.2f} each) - denovo preferred (less biased)"
+        else:
+            selection_reason = f"ref-denovo ahead by {refguided_score - denovo_score:.2f} points but < {MIN_MARGIN_FOR_REFGUIDED} margin - denovo preferred"
     
     # Copy best assembly to output
     shutil.copy(selected_asm, output_asm)
@@ -112,23 +124,25 @@ def main():
     with open(report_file, 'w') as f:
         f.write(f"Assembly Selection Report\n")
         f.write(f"========================\n\n")
-        f.write(f"SELECTED: {selected} (Score: {winner_score:.2f})\n\n")
-        
+        f.write(f"SELECTED: {selected} (Score: {winner_score:.2f})\n")
+        f.write(f"Reason: {selection_reason}\n\n")
+
         f.write(f"De Novo Assembly:\n")
         f.write(f"  Score: {denovo_score:.2f}\n")
         f.write(f"  N50: {denovo_stats['N50']:,} bp\n")
         f.write(f"  Contigs: {denovo_stats['num_contigs']}\n")
         f.write(f"  Length: {denovo_stats['total_length']:,} bp\n")
         f.write(f"  GC%: {denovo_stats['gc_percent']:.2f}\n\n")
-        
+
         f.write(f"Reference-Guided Assembly:\n")
         f.write(f"  Score: {refguided_score:.2f}\n")
         f.write(f"  N50: {refguided_stats['N50']:,} bp\n")
         f.write(f"  Contigs: {refguided_stats['num_contigs']}\n")
         f.write(f"  Length: {refguided_stats['total_length']:,} bp\n")
         f.write(f"  GC%: {refguided_stats['gc_percent']:.2f}\n\n")
-        
-        f.write(f"Score Difference: {abs(winner_score - loser_score):.2f} points\n")
+
+        f.write(f"Score Difference: {abs(denovo_score - refguided_score):.2f} points\n")
+        f.write(f"Minimum margin for ref-denovo: {MIN_MARGIN_FOR_REFGUIDED} points\n")
 
 if __name__ == "__main__":
     main()
