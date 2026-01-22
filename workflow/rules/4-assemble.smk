@@ -24,6 +24,7 @@ rule denovo_bowtie_ref24:
 	output:
 		bam = OUTDIR / "{sample}" / "denovo" / "bowtie_ref24" / "{sample}.ref24.bam",
 		coverage = OUTDIR / "{sample}" / "denovo" / "bowtie_ref24" / "{sample}.coverage.ref24.tsv",
+		flagstat = OUTDIR / "{sample}" / "denovo" / "bowtie_ref24" / "{sample}.flagstat.txt",
 		status = OUTDIR / "status" / "denovo.bowtie2.ref24.{sample}.txt",
 	params:
 		prefix = rules.denovo_index.params.prefix_ref24,
@@ -45,10 +46,13 @@ rule denovo_bowtie_ref24:
 
 	samtools index {output.bam}
 	samtools coverage {output.bam} > {params.tmp}
-	
-	csvtk mutate2 -t {params.tmp} \
+
+	csvtk mutate2 -t -C $ {params.tmp} \
 	 -n sample_name --at 1 \
 	 -e "'{params.sample_name}'" > {output.coverage}
+
+	# Generate alignment statistics
+	samtools flagstat {output.bam} > {output.flagstat}
 
 	touch {output.status}
 	"""
@@ -235,6 +239,31 @@ rule denovo_collate_coverage:
 	conda: "../envs/misc.yaml"
 	shell:"""
 	csvtk concat  {input.coverages} > {output.coverages}
+
+	touch {output.status}
+	"""
+
+rule denovo_collate_flagstat:
+	input:
+		flagstats = expand(OUTDIR / "{sample}" / "denovo" / "bowtie_ref24" / "{sample}.flagstat.txt", sample = SAMPLES),
+	output:
+		summary = OUTDIR / "reports" / "denovo.alignment_summary.txt",
+		status = OUTDIR / "status" / "denovo.collate.flagstat.txt",
+	threads: 1
+	shell: r"""
+	mkdir -p "$(dirname {output.summary})"
+
+	echo "De Novo Alignment Summary (vs Reference Set)" > {output.summary}
+	echo "Generated: $(date)" >> {output.summary}
+	echo "================================" >> {output.summary}
+	echo "" >> {output.summary}
+
+	for flagstat in {input.flagstats}; do
+		sample=$(basename $(dirname $(dirname $flagstat)))
+		echo "Sample: $sample" >> {output.summary}
+		cat $flagstat >> {output.summary}
+		echo "" >> {output.summary}
+	done
 
 	touch {output.status}
 	"""

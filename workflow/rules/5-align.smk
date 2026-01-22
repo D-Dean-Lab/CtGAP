@@ -98,14 +98,20 @@ rule bamtofastq:
                 r1 = OUTDIR / "{sample}" / "ref-denovo" / "bamtofastq" / "{sample}_refg_r1.fastq.gz",
                 r2 = OUTDIR / "{sample}" / "ref-denovo" / "bamtofastq" / "{sample}_refg_r2.fastq.gz",
                 status = OUTDIR / "status" / "ref-denovo.bamtofastq.{sample}.txt",
+        params:
+                r1_tmp = lambda w: str(OUTDIR / w.sample / "ref-denovo" / "bamtofastq" / f"{w.sample}_refg_r1.fastq"),
+                r2_tmp = lambda w: str(OUTDIR / w.sample / "ref-denovo" / "bamtofastq" / f"{w.sample}_refg_r2.fastq"),
         threads: config["threads"]["bedtools"]
         log: OUTDIR / "{sample}" / "log" / "ref-denovo.bamtofastq.{sample}.log"
         conda: "../envs/misc.yaml"
         shell:"""
         bedtools bamtofastq \
         -i {input.bam} \
-        -fq {output.r1} \
-        -fq2 {output.r2} 2> {log}
+        -fq {params.r1_tmp} \
+        -fq2 {params.r2_tmp} 2> {log}
+
+        gzip -f {params.r1_tmp}
+        gzip -f {params.r2_tmp}
 
         touch {output.status}
         """

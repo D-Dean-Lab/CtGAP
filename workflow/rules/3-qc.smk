@@ -31,7 +31,7 @@ rule multiqc:
         report = OUTDIR / "multiqc" / "multiqc_report.html",
     params:
         outdir = OUTDIR / "multiqc",
-        search = OUTDIR / "qc",
+        search = OUTDIR,  # Search from root to find all */qc/ subdirs
     log: OUTDIR / "log" / "multiqc.log"
     # if multiqc isn't in trim.yaml, use an env that has it (e.g., ../envs/qc.yaml)
     conda: "../envs/misc.yaml"
