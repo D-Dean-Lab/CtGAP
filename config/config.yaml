@@ -26,26 +26,60 @@ ragtag:
 # ensure conda is used without user having to specify
 use_conda: true
 
+# ========== Assembly Filtering ==========
+# Removes non-Ct contigs (contamination, artifacts) by aligning to reference
+
+assembly_filter:
+  enabled: true  # Set to false to disable post-assembly filtering
+  min_identity: 0  # Minimum % identity to Ct reference to keep contig #change as you like
+  min_coverage: 30  # Minimum % of contig that must align to reference
+
+# ========== Mixed Strain Detection ==========
+
+mixed_detection:
+  enabled: true  # Set to false to disable mixed strain detection
+  het_threshold: 50  # Number of heterozygous sites to flag as potential mixed infection
+  min_af: 0.15  # Minimum allele frequency for heterozygous-like site
+  max_af: 0.85  # Maximum allele frequency for heterozygous-like site
+  min_depth: 10  # Minimum read depth at site to consider
+  min_base_qual: 20  # Minimum base quality (reduces sequencing errors)
+  min_strand_reads: 2  # Minimum reads on each strand (reduces strand bias artifacts)
+
+# ========== Annotation Configuration ==========
+
+annotation:
+  enabled: true  # Set to false to disable genome annotation
+  min_coverage: 90  # Minimum % genome coverage to trigger annotation (vs 1.043 Mb)
+
+bakta:
+  db: "resources/bakta_db/db-light"  # Light DB by default; replace with full DB path if desired
+  # Additional bakta options (optional)
+  genus: "Chlamydia"
+  species: "trachomatis"
+  gram: "?"  # Chlamydia cell wall is unusual
+
 # number of cpus used per tool/rule
+# These are max values - snakemake will cap based on available resources
 threads:
   fastp: 32
-  shovill: 20
-  spades: 20
-  blast: 12
-  ragtag: 16
-  bowtieindex: 40
-  bowtie: 40
-  samtools: 36
-  mlst: 1
-  gap2seq: 8
-  bedtools: 1
-  ska: 48
-  tree: 64
+  shovill: 24
+  spades: 32
+  blast: 32
+  ragtag: 32
+  bowtieindex: 32
+  bowtie: 32
+  samtools: 32
+  mlst: 32
+  gap2seq: 32
+  bedtools: 32
+  ska: 32
+  tree: 32
   quast: 32
-  dnadiff: 8
-  hocort: 20
-  kraken: 8
-  unicycler: 20
+  dnadiff: 32
+  hocort: 32
+  kraken: 32
+  unicycler: 32
+  bakta: 32
 
 # ========== CT Typing Configuration ==========
 

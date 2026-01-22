@@ -44,12 +44,10 @@ CtGAP - Chlamydia trachomatis Genome Assembly Pipeline
 Usage: ctgap COMMAND [OPTIONS]
 
 Commands:
-  setup       Setup conda environments
-  run         Run the pipeline
-  clean       Clean output files
-  dag         Generate DAG visualization
-  rulegraph   Generate rule graph visualization
-  filegraph   Generate file graph visualization
+  setup              Setup conda environments
+  run                Run the pipeline
+  clean              Finalize outputs and remove intermediate files
+  help               Show detailed help
 
 Options:
   --denovo              Use de novo assembly only
@@ -61,9 +59,15 @@ Examples:
   ctgap run                         # Auto mode (recommended)
   ctgap run --denovo                # De novo only
   ctgap run --ref-guided E_bour     # Reference-guided with E_bour
-  ctgap run --ref-guided plurality  # Reference-guided with plurality consensus
+  ctgap run --ref-guided plurality  # Reference-guided with plurality
   ctgap setup                       # Setup environments
-  ctgap dag --auto                  # Generate DAG for auto mode
+  ctgap clean                       # Finalize and free disk space
+
+Output Structure (after pipeline completes):
+  output/01_per_sample/  - Per-sample data
+  output/02_reports/     - All reports (PDFs, summaries)
+  output/03_results/     - Collated typing/coverage results
+  output/04_phylogeny/   - Phylogenetic tree
 
 EOF
             exit 0

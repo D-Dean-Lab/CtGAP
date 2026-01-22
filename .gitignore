@@ -1,10 +1,12 @@
 .DS_Store
+Thumbs.db
 .snakemake/*
-resources/GRCh38.fasta
+resources/GRCh38*
 *.bt2
 input/*.fastq.gz
 resources/grch38.*
 resources/standardDB/*
+resources/bakta_db/
 
 workflow/.snakemake/
 logs/
@@ -27,6 +29,7 @@ conda/
 
 __pycache__/
 *.pyc
+EOF
 
 *~
 *.swp
@@ -35,3 +38,19 @@ __pycache__/
 *.bak
 workflow/config/
 config/samples.csv
+workflow/envs/*.yaml.lock
+
+# Temporary files                                                                                   
+*.tmp                                                                                               
+*.temp                                                                                              
+*.log                                                                                               
+*.bam                                                                                               
+*.bai                                                                                               
+*.fq.gz                                                                                             
+*.fastq.gz    
+
+~$*
+*.archived
+rxiv_Jan21/
+rxiv_Jan15/
+docs/OUTPUT_STRUCTURE.md
