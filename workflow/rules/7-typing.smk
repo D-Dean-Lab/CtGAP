@@ -5,9 +5,59 @@ def get_best_assembly(wildcards):
     """Return the best assembly path based on mode"""
     return OUTDIR / wildcards.sample / "best" / "assembly.fasta"
 
+# -----------------------------------------------------------------------------
+# BLAST DATABASE PREPARATION
+# Ensures databases are built with the same BLAST version used for searching
+# -----------------------------------------------------------------------------
+
+rule prepare_ompa_blastdb:
+    """Build/rebuild ompA BLAST database to ensure version compatibility."""
+    input:
+        fasta = Path(config["ompaBlastDB"]).parent / (Path(config["ompaBlastDB"]).name + ".fasta")
+    output:
+        status = OUTDIR / "status" / "blastdb.ompa.txt"
+    params:
+        db_prefix = config["ompaBlastDB"]
+    log: OUTDIR / "log" / "prepare_ompa_blastdb.log"
+    conda: "../envs/misc.yaml"
+    shell: r"""
+    # Always rebuild to ensure version compatibility with this conda env's BLAST
+    echo "Building ompA BLAST database with $(blastn -version | head -1)..." > {log}
+    makeblastdb -in {input.fasta} -dbtype nucl -out {params.db_prefix} >> {log} 2>&1
+    echo "Database built successfully" >> {log}
+    touch {output.status}
+    """
+
+rule prepare_secondary_blastdb:
+    """Build/rebuild secondary BLAST database to ensure version compatibility."""
+    input:
+        fasta = Path(config.get("secondaryBlastDB", "resources/references/ct/secondaryBlastDB/secondary")).parent / (Path(config.get("secondaryBlastDB", "resources/references/ct/secondaryBlastDB/secondary")).name + ".fasta")
+    output:
+        status = OUTDIR / "status" / "blastdb.secondary.txt"
+    params:
+        db_prefix = config.get("secondaryBlastDB", "resources/references/ct/secondaryBlastDB/secondary")
+    log: OUTDIR / "log" / "prepare_secondary_blastdb.log"
+    conda: "../envs/misc.yaml"
+    shell: r"""
+    # Always rebuild to ensure version compatibility with this conda env's BLAST
+    echo "Building secondary BLAST database with $(blastn -version | head -1)..." > {log}
+    makeblastdb -in {input.fasta} -dbtype nucl -out {params.db_prefix} >> {log} 2>&1
+    echo "Database built successfully" >> {log}
+    touch {output.status}
+    """
+
+# -----------------------------------------------------------------------------
+# BLAST TYPING
+# -----------------------------------------------------------------------------
+
 rule blast_ompa:
     input:
         contig = get_best_assembly,  # ← Uses best assembly
+        # Ensure BLAST databases are built with compatible version
+        ompa_db_status = OUTDIR / "status" / "blastdb.ompa.txt",
+        secondary_db_status = OUTDIR / "status" / "blastdb.secondary.txt",
+        # Wait for assembly filtering to complete (if enabled)
+        filter_status = OUTDIR / "status" / "filter_applied.{sample}.txt",
     output:
         primary_tab = OUTDIR / "{sample}" / "best" / "blast" / "blast.ompa.tab",
         secondary_tab = OUTDIR / "{sample}" / "best" / "blast" / "blast.secondary.tab",
@@ -23,24 +73,37 @@ rule blast_ompa:
     conda: "../envs/misc.yaml"
     shell: r"""
     mkdir -p "$(dirname {output.primary_tab})"
-    
+
+    # Primary BLAST against ompA database
     blastn \
       -query {input.contig} \
       -db {params.primary_db} \
+      -num_threads {threads} \
+      -use_index false \
       -max_target_seqs {params.targets} \
       -outfmt {params.outfmt} \
       -out {output.primary_tab} \
       > {log} 2>&1
 
-    # Get top hit
-    top_hit=$(head -n1 {output.primary_tab} | cut -f2)
-    
-    # Check if top hit matches targets and run secondary BLAST
+    # Check for empty results
+    if [ ! -s {output.primary_tab} ]; then
+      echo "WARNING: No BLAST hits found for {wildcards.sample}" >> {log}
+      touch {output.secondary_tab}
+      touch {output.status}
+      exit 0
+    fi
+
+    # Get top hit by bitscore (column 12)
+    top_hit=$(sort -k12,12nr {output.primary_tab} | head -n1 | cut -f2)
+
+    # Check if top hit matches A/B/Ba/C genotypes requiring secondary BLAST
     if echo "{params.target_hits}" | grep -qw "$top_hit"; then
       echo "Top hit $top_hit matched - running secondary BLAST" >> {log}
       blastn \
         -query {input.contig} \
         -db {params.secondary_db} \
+        -num_threads {threads} \
+        -use_index false \
         -max_target_seqs 5 \
         -outfmt {params.outfmt} \
         -out {output.secondary_tab} \
@@ -56,6 +119,8 @@ rule blast_ompa:
 rule mlst:
     input:
         contig = get_best_assembly,  # ← Uses best assembly
+        # Wait for assembly filtering to complete (if enabled)
+        filter_status = OUTDIR / "status" / "filter_applied.{sample}.txt",
     output:
         generic = OUTDIR / "{sample}" / "best" / "mlst" / "{sample}.genome.chlamydiales.mlst.txt",
         ct = OUTDIR / "{sample}" / "best" / "mlst" / "{sample}.genome.ctrachomatis.mlst.txt",
@@ -71,12 +136,12 @@ rule mlst:
     echo -e "chlamydiales\n" >> {log}
     claMLST search \
     {params.dbgeneric} \
-    {input} > {output.generic} 2>> {log}
+    {input.contig} > {output.generic} 2>> {log}
 
     echo -e "\nctrachomatis\n" >> {log}
     claMLST search \
     {params.dbct} \
-    {input} > {output.ct} 2>> {log}
+    {input.contig} > {output.ct} 2>> {log}
 
     touch {output.status}
     """
@@ -89,11 +154,12 @@ rule collate_blast:
         status = OUTDIR / "status" / "best.ompA_genovar.collate.blast.txt",
     params:
         outdir = OUTDIR,
-        pattern = "**/best/blast/*.tab",
     threads: 1
-    shell:"""
+    shell: r"""
     echo -e "query\tsubject\tpident\tlength\tmismatch\tgapopen\tquery_start\tquery_end\tsubject_start\tsubject_end\tevalue\tbitscore" > {output.tsv}
-    grep "" {params.outdir}/{params.pattern} >> {output.tsv}
+
+    # Find only primary ompA BLAST results (not secondary), use cat to avoid filename prefixes
+    find {params.outdir} -path "*/best/blast/blast.ompa.tab" -type f ! -empty -exec cat {{}} \; >> {output.tsv}
 
     touch {output.status}
     """
@@ -106,13 +172,12 @@ rule collate_secondary_blast:
         status = OUTDIR / "status" / "best.secondary.collate.blast.txt",
     params:
         outdir = OUTDIR,
-        pattern = "**/best/blast/blast.secondary.tab",
     threads: 1
     shell: r"""
     echo -e "query\tsubject\tpident\tlength\tmismatch\tgapopen\tquery_start\tquery_end\tsubject_start\tsubject_end\tevalue\tbitscore" > {output.tsv}
-    
-    # Only add non-empty files
-    find {params.outdir} -path "{params.pattern}" -type f ! -empty -exec cat {{}} \; >> {output.tsv}
+
+    # Only add non-empty secondary BLAST files
+    find {params.outdir} -path "*/best/blast/blast.secondary.tab" -type f ! -empty -exec cat {{}} \; >> {output.tsv}
 
     touch {output.status}
     """

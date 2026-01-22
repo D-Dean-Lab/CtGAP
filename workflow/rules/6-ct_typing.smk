@@ -47,7 +47,9 @@ if CT_ENABLED:
     rule ct_mash_sketch_query:
         """Sketch individual query genome"""
         input:
-            query = get_best_assembly  # ← CHANGED: Use unified best assembly
+            query = get_best_assembly,  # ← CHANGED: Use unified best assembly
+            # Wait for assembly filtering to complete (if enabled)
+            filter_status = OUTDIR / "status" / "filter_applied.{sample}.txt"
         output:
             sketch = OUTDIR / "{sample}" / "ct_typing" / "mash" / "{sample}.msh"
         params:
@@ -98,7 +100,9 @@ if CT_ENABLED:
         """Run fastANI between query and all CT references"""
         input:
             query = get_best_assembly,  # ← CHANGED: Use unified best assembly
-            refs = CT_REFS
+            refs = CT_REFS,
+            # Wait for assembly filtering to complete (if enabled)
+            filter_status = OUTDIR / "status" / "filter_applied.{sample}.txt"
         output:
             ani = OUTDIR / "{sample}" / "ct_typing" / "ani" / "{sample}_vs_refs.ani.tsv",
             ref_list = temp(OUTDIR / "{sample}" / "ct_typing" / "ani" / "refs.txt"),
@@ -155,7 +159,12 @@ if CT_ENABLED:
             else:
                 df = pd.read_csv(input.ani, sep="\t", header=None,
                                names=["query", "ref", "ANI", "frags_over", "frags_total"])
-                
+
+                # Ensure numeric types (fixes numpy/pandas type inference issues)
+                df["ANI"] = pd.to_numeric(df["ANI"], errors='coerce')
+                df["frags_over"] = pd.to_numeric(df["frags_over"], errors='coerce')
+                df["frags_total"] = pd.to_numeric(df["frags_total"], errors='coerce')
+
                 # Calculate coverage
                 df["cov"] = df["frags_over"] / df["frags_total"]
                 
@@ -178,22 +187,26 @@ if CT_ENABLED:
                 }])
                 
                 # Check coverage
-                if top["cov"] < params.min_cov:
+                min_cov = float(params.min_cov)
+                if top["cov"] < min_cov:
                     result.loc[0, "flag"] = "low_ani_coverage"
-                
+
                 # Check for near-tie with second-best
                 if len(df) > 1:
                     alt = df.iloc[1]
                     result.loc[0, "alt_ref"] = alt["ref"]
                     result.loc[0, "alt_ANI"] = alt["ANI"]
                     result.loc[0, "alt_cov"] = alt["cov"]
-                    
-                    if (top["ANI"] - alt["ANI"]) < params.delta:
+
+                    delta = float(params.delta)
+                    if (top["ANI"] - alt["ANI"]) < delta:
                         result.loc[0, "flag"] = "near_tie"
                         
                         # Vote using Mash to break tie
                         mash_df = pd.read_csv(input.mash_all, sep="\t", header=None,
                                             names=["ref", "query", "mash_dist", "pvalue", "shared_hashes"])
+                        # Ensure mash_dist is numeric (fixes numpy/pandas type inference issues)
+                        mash_df["mash_dist"] = pd.to_numeric(mash_df["mash_dist"], errors='coerce')
                         
                         top_ref = os.path.basename(str(top["ref"]))
                         alt_ref = os.path.basename(str(alt["ref"]))
@@ -205,9 +218,10 @@ if CT_ENABLED:
                         m_alt = mash_df[mash_df["ref_base"] == alt_ref]["mash_dist"].min()
                         
                         if pd.notna(m_top) and pd.notna(m_alt):
-                            if (m_alt - m_top) > params.mash_margin:
+                            mash_margin = float(params.mash_margin)
+                            if (m_alt - m_top) > mash_margin:
                                 result.loc[0, "flag"] = "clear_by_mash_vote"
-                            elif (m_top - m_alt) > params.mash_margin:
+                            elif (m_top - m_alt) > mash_margin:
                                 result.loc[0, "ref"] = alt["ref"]
                                 result.loc[0, "ANI"] = alt["ANI"]
                                 result.loc[0, "cov"] = alt["cov"]
