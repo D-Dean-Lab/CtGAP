@@ -9,7 +9,7 @@ rule quast:
 		#status = OUTDIR / "status" / "denovo.quasted.{sample}.txt",
 	conda: "../envs/misc.yaml"
 	log: OUTDIR / "{sample}" / "log" / "quast.{sample}.log"
-	threads: 5
+	threads: config["threads"]["quast"]
 	shell: """
 	quast \
 	{input.fasta} \
