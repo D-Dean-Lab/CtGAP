@@ -329,6 +329,7 @@ if CT_ENABLED:
             combined = pd.concat(dfs, ignore_index=True)
             
             # Sort by sample name
+            combined["sample"] = combined["sample"].astype(str)
             combined = combined.sort_values("sample")
             
             # Save
