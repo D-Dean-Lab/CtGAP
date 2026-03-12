@@ -291,9 +291,9 @@ def parse_coverage(coverage_file):
         header = f.readline()
         for line in f:
             parts = line.strip().split("\t")
-            if len(parts) >= 7:
-                result["mean_depth"] = float(parts[6]) if parts[6] != "nan" else 0
-                result["coverage_pct"] = float(parts[5]) if parts[5] != "nan" else 0
+            if len(parts) >= 8:
+                result["mean_depth"] = float(parts[7]) if parts[7] != "nan" else 0
+                result["coverage_pct"] = float(parts[6]) if parts[6] != "nan" else 0
                 break
 
     return result
