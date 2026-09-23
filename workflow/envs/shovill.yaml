@@ -1,6 +1,7 @@
 name: ctgap_shovill
 channels:
+  - conda-forge
   - bioconda
 dependencies:
-  - shovill
-  - spades
+  - shovill=1.4.0
+  - spades=3.15.5
